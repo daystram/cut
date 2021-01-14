@@ -43,7 +43,7 @@ deploy dev cut-be:
   only:
     - branches
   except:
-    - master
+    - main
 
 deploy prod cut-be:
   stage: deploy
@@ -99,7 +99,7 @@ deploy dev cut-fe:
   only:
     - branches
   except:
-    - master
+    - main
 
 deploy prod cut-fe:
   stage: deploy
