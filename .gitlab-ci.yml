@@ -72,7 +72,6 @@ build cut-fe:
   image: node:lts-alpine
   script:
     - cd cut-fe
-    - cp $VUE_ENV_FILE ./.env.production
     - yarn install
     - yarn build
   artifacts:
