@@ -1,21 +1,14 @@
-use crate::app::handlers;
-use crate::app::Module;
-use crate::core::error::HandlerErrorKind;
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use crate::app::{datatransfers::cut::Cut, handlers, Module};
+use actix_web::{post, web, HttpRequest, HttpResponse, Responder};
 
-pub async fn get_snippet_list(m: web::Data<Module>, _req: HttpRequest) -> impl Responder {
-    match handlers::snippet::get(m) {
-        Ok(Some(res)) => HttpResponse::Ok().body(format!("{}", res)),
-        Ok(None) => HttpResponse::Ok().body("Not found"),
-        Err(e) => match e.kind {
-            HandlerErrorKind::GeneralError => {
-                HttpResponse::InternalServerError().body(format!("{:?}", e))
-            }
-            _ => HttpResponse::InternalServerError().body(format!("{:?}", e)),
-        },
+#[post("")]
+pub async fn post_snippet_create(
+    m: web::Data<Module>,
+    cut: web::Json<Cut>,
+    _req: HttpRequest,
+) -> impl Responder {
+    match handlers::snippet::insert(m, cut.0) {
+        Ok(res) => HttpResponse::Ok().body(format!("{}", res)),
+        Err(e) => HttpResponse::InternalServerError().body(format!("{:?}", e)),
     }
-}
-
-pub async fn post_snippet_create(_: web::Data<Module>, _req: HttpRequest) -> impl Responder {
-    HttpResponse::Ok().body("Pong!")
 }
