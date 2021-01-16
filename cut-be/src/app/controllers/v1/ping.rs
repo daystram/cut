@@ -1,6 +1,5 @@
-use crate::app::Module;
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder};
 
-pub async fn get_ping(_: web::Data<Module>, _: HttpRequest) -> impl Responder {
+pub async fn get_ping() -> impl Responder {
     HttpResponse::Ok().body("Pong!")
 }
