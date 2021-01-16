@@ -1,6 +1,6 @@
 #[derive(Debug, Copy, Clone)]
 pub enum HandlerErrorKind {
-    SnippetNotFoundError,
+    CutNotFoundError,
     RedisError,
     GeneralError,
 }
@@ -9,6 +9,21 @@ pub enum HandlerErrorKind {
 pub struct HandlerError {
     pub kind: HandlerErrorKind,
     pub message: String,
+}
+
+impl From<HandlerErrorKind> for HandlerError {
+    fn from(error: HandlerErrorKind) -> Self {
+        match error {
+            HandlerErrorKind::CutNotFoundError => HandlerError {
+                kind: HandlerErrorKind::CutNotFoundError,
+                message: "cut not found".into(),
+            },
+            _ => HandlerError {
+                kind: HandlerErrorKind::GeneralError,
+                message: format!("an error has occurred. {:?}", error),
+            },
+        }
+    }
 }
 
 impl From<r2d2::Error> for HandlerError {
