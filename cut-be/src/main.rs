@@ -1,5 +1,3 @@
-use crate::core::config::AppConfig;
-
 mod app;
 mod core;
 

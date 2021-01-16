@@ -1,5 +1,5 @@
-use actix_web::web;
 use crate::app::controllers::v1;
+use actix_web::web;
 
 pub fn init(app: &mut web::ServiceConfig) {
     app.service(
