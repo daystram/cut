@@ -3,7 +3,9 @@ use actix_web::{middleware::Logger, App, HttpServer};
 use r2d2::Pool;
 use r2d2_redis::RedisConnectionManager;
 
+pub mod constants;
 pub mod controllers;
+pub mod datatransfers;
 pub mod handlers;
 pub mod router;
 
