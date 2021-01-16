@@ -1,25 +1,27 @@
-use actix_web::{App, HttpServer};
 use crate::core;
 use crate::AppConfig;
+use actix_web::{middleware::Logger, App, HttpServer};
 
 pub mod controllers;
 pub mod handlers;
 pub mod router;
 
-#[derive(Clone)]
 pub struct Module {
     pub config: AppConfig,
-    pub rd: String,
 }
 
 pub async fn start() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        let config = core::config::init();
-        let module = Module {
-            config: config.clone(),
-            rd: String::from(config.client_secret),
-        };
-        App::new().data(module).configure(router::init)
+    // init AppConfig
+    let config = core::config::init();
+
+    // run server
+    HttpServer::new(move || {
+        App::new()
+            .data(Module {
+                config: config.clone(),
+            })
+            .wrap(Logger::default())
+            .configure(router::init)
     })
     .bind(format!(
         "{}:{}",
