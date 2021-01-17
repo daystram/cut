@@ -9,7 +9,8 @@ pub struct Cut {
     pub variant: String,
     pub metadata: String,
     pub data: String,
-    pub created_at: i64,
+    #[serde(skip_deserializing)]
+    pub created_at: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
