@@ -48,18 +48,3 @@ impl From<r2d2_redis::redis::RedisError> for HandlerError {
         }
     }
 }
-
-impl From<reqwest::Error> for HandlerError {
-    fn from(error: reqwest::Error) -> Self {
-        HandlerError {
-            kind: HandlerErrorKind::UnauthorizedError,
-            message: error.to_string(),
-        }
-    }
-}
- impl std::fmt::Display for HandlerError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.message)
-    }
- }
- 
