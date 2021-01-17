@@ -13,7 +13,7 @@ pub async fn get_cut(m: web::Data<Module>, req: HttpRequest) -> impl Responder {
     };
 
     let id: String = req.match_info().query("id").parse().unwrap();
-    match handlers::snippet::get_one(m, id) {
+    match handlers::cut::get_one(m, id) {
         Ok(res) => HttpResponse::Ok().json(res),
         Err(e) => match e.kind {
             HandlerErrorKind::CutNotFoundError => HttpResponse::NotFound().finish(),
