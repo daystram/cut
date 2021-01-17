@@ -10,6 +10,24 @@ use crate::core::error::HandlerErrorKind;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 
 #[get("/{id}")]
+pub async fn get_cut_raw(m: web::Data<Module>, req: HttpRequest) -> impl Responder {
+    let id: String = req.match_info().query("id").parse().unwrap();
+    match handlers::cut::get_one(m, id) {
+        Ok(cut) => match cut.variant.as_str() {
+            constants::VARIANT_SNIPPET => HttpResponse::Ok().body(cut.data),
+            constants::VARIANT_URL => HttpResponse::TemporaryRedirect()
+                .header("Location", cut.data)
+                .finish(),
+            _ => HttpResponse::NotFound().finish(),
+        },
+        Err(e) => match e.kind {
+            HandlerErrorKind::CutNotFoundError => HttpResponse::NotFound().finish(),
+            _ => HttpResponse::InternalServerError().body(format!("{:?}", e)),
+        },
+    }
+}
+
+#[get("/{id}")]
 pub async fn get_cut(m: web::Data<Module>, req: HttpRequest) -> impl Responder {
     let id: String = req.match_info().query("id").parse().unwrap();
     match handlers::cut::get_one(m, id) {
