@@ -1,35 +1,25 @@
-use crate::app::{constants::VARIANT_SNIPPET, datatransfers::cut::Cut, Module};
-use crate::core::error::{HandlerError, HandlerErrorKind};
+use crate::app::{
+    constants::{HASH_LENGTH, VARIANT_SNIPPET},
+    datatransfers::cut::Cut,
+    Module,
+};
+use crate::core::error::{HandlerError};
+use crate::utils::hash;
 use actix_web::web;
 use r2d2_redis::redis::Commands;
-use std::collections::HashMap;
 
-pub fn get_one(m: web::Data<Module>, id: String) -> Result<Cut, HandlerError> {
+pub fn insert(
+    m: web::Data<Module>,
+    user_subject: String,
+    cut: Cut,
+) -> Result<String, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
-    match rd.hgetall::<String, HashMap<String, String>>(id) {
-        Ok(res) => {
-            if res.is_empty() {
-                return Err(HandlerErrorKind::CutNotFoundError.into());
-            }
-            Ok(Cut {
-                name: res.get("name").unwrap().to_string(),
-                variant: res.get("variant").unwrap().to_string(),
-                metadata: res.get("metadata").unwrap().to_string(),
-                data: res.get("data").unwrap().to_string(),
-                created_at: res.get("created_at").unwrap().parse().unwrap(),
-            })
-        }
-        Err(e) => Err(e.into()),
-    }
-}
-
-pub fn insert(m: web::Data<Module>, cut: Cut) -> Result<String, HandlerError> {
-    let rd = &mut m.rd_pool.get()?;
-    let hash: String = "ID".into(); // TODO: generate random hash
+    let hash: String = hash::generate(HASH_LENGTH).into(); // TODO: generate random hash
     match rd.hset_multiple::<String, &str, String, String>(
         hash.clone(),
         &[
             ("name", cut.name),
+            ("owner", user_subject),
             ("variant", VARIANT_SNIPPET.into()),
             ("metadata", cut.metadata),
             ("data", cut.data),

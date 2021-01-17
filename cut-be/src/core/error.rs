@@ -31,6 +31,15 @@ impl From<HandlerErrorKind> for HandlerError {
     }
 }
 
+impl From<std::num::ParseIntError> for HandlerError {
+    fn from(error: std::num::ParseIntError) -> Self {
+        HandlerError {
+            kind: HandlerErrorKind::GeneralError,
+            message: error.to_string(),
+        }
+    }
+}
+
 impl From<r2d2::Error> for HandlerError {
     fn from(error: r2d2::Error) -> Self {
         HandlerError {
