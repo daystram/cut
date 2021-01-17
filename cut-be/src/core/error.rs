@@ -1,5 +1,6 @@
 #[derive(Debug, Copy, Clone)]
 pub enum HandlerErrorKind {
+    UnauthorizedError,
     CutNotFoundError,
     RedisError,
     GeneralError,
@@ -14,6 +15,10 @@ pub struct HandlerError {
 impl From<HandlerErrorKind> for HandlerError {
     fn from(error: HandlerErrorKind) -> Self {
         match error {
+            HandlerErrorKind::UnauthorizedError => HandlerError {
+                kind: HandlerErrorKind::UnauthorizedError,
+                message: "request unauthorized".into(),
+            },
             HandlerErrorKind::CutNotFoundError => HandlerError {
                 kind: HandlerErrorKind::CutNotFoundError,
                 message: "cut not found".into(),
@@ -43,3 +48,18 @@ impl From<r2d2_redis::redis::RedisError> for HandlerError {
         }
     }
 }
+
+impl From<reqwest::Error> for HandlerError {
+    fn from(error: reqwest::Error) -> Self {
+        HandlerError {
+            kind: HandlerErrorKind::UnauthorizedError,
+            message: error.to_string(),
+        }
+    }
+}
+ impl std::fmt::Display for HandlerError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+ }
+ 
