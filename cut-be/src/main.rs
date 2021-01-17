@@ -1,5 +1,6 @@
 mod app;
 mod core;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
