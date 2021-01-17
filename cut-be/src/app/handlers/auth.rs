@@ -5,7 +5,7 @@ use actix_web::{client::Client, web, HttpRequest};
 pub async fn authorize(m: &web::Data<Module>, req: &HttpRequest) -> Result<TokenInfo, HandlerError> {
     let access_token: &str = match req.headers().get("Authorization") {
         Some(header_value) => match header_value.to_str() {
-            Ok(access_token) => access_token.trim_start_matches("Bearer "),
+            Ok(access_token) => access_token.strip_prefix("Bearer ").unwrap_or_else(|| access_token),
             Err(_) => return Err(HandlerErrorKind::GeneralError.into()),
         },
         _ => return Err(HandlerErrorKind::UnauthorizedError.into()),
