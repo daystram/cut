@@ -5,6 +5,7 @@ import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
 import "./plugins/prismjs";
+import "./plugins/vuelidate";
 import { StatusMixin } from "@/constants/status";
 
 import "@/styles/App.sass";
