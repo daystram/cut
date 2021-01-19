@@ -1,3 +1,64 @@
 module.exports = {
-  presets: ["@vue/cli-plugin-babel/preset"]
+  presets: ["@vue/cli-plugin-babel/preset"],
+  plugins: [
+    [
+      "prismjs",
+      {
+        languages: [
+          "html",
+          "css",
+          "js",
+          "applescript",
+          "shell",
+          "basic",
+          "brainfuck",
+          "c",
+          "cs",
+          "cpp",
+          "coffee",
+          "d",
+          "dart",
+          "docker",
+          "erlang",
+          "fortran",
+          "go",
+          "graphql",
+          "groovy",
+          "hs",
+          "hlsl",
+          "java",
+          "json",
+          "julia",
+          "kt",
+          "tex",
+          "less",
+          "lisp",
+          "lua",
+          "makefile",
+          "md",
+          "matlab",
+          "objc",
+          "pascal",
+          "perl",
+          "php",
+          "powershell",
+          "python",
+          "r",
+          "rb",
+          "rust",
+          "sass",
+          "scala",
+          "sql",
+          "swift",
+          "toml",
+          "ts",
+          "vb",
+          "wasm",
+          "xml",
+          "yml"
+        ],
+        plugins: ["line-numbers"]
+      }
+    ]
+  ]
 };
