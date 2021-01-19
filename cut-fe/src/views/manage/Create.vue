@@ -21,26 +21,23 @@
               <v-icon v-text="'mdi-file-upload'" class="mr-2" />File
             </v-tab>
           </v-tabs>
-          <v-tabs-items v-model="variant">
-            <v-tab-item key="snippet">
-              <v-card elevation="0">
-                <v-card-text>
+          <v-card elevation="0">
+            <v-card-text>
+              <v-tabs-items v-model="variant">
+                <v-tab-item key="snippet">
                   <v-col>
                     <v-row>
                       <v-col cols="12" sm="8">
                         <v-text-field
                           v-model.trim="snippet.name"
                           label="Name"
-                          filled
-                          dense
+                          outlined
                           maxlength="50"
-                          class="rounded"
                           background-color="#2d2d2d"
                           hide-details="auto"
                           :error-messages="snippetNameErrors"
                           required
                           :disabled="formLoadStatus === STATUS.LOADING"
-                          @input="$v.snippet.name.$touch()"
                           @blur="$v.snippet.name.$touch()"
                         />
                       </v-col>
@@ -49,18 +46,15 @@
                           v-model="snippet.language"
                           :items="Object.keys(snippet.languageSelect)"
                           label="Language"
-                          filled
-                          dense
+                          outlined
                           background-color="#2d2d2d"
-                          class="rounded"
+                          hide-details="auto"
                           style="border: none !important"
                           required
                           :disabled="formLoadStatus === STATUS.LOADING"
                         />
                       </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col class="py-0">
+                      <v-col>
                         <prism-editor
                           v-model="snippet.data"
                           :highlight="highlighter"
@@ -70,23 +64,36 @@
                       </v-col>
                     </v-row>
                   </v-col>
-                </v-card-text>
-              </v-card>
-            </v-tab-item>
-            <v-tab-item key="url">
-              <v-card flat>
-                <v-card-text>URL EDITOR</v-card-text>
-              </v-card>
-            </v-tab-item>
-            <v-tab-item key="file">
-              <v-card flat>
-                <v-card-text>FILE EDITOR</v-card-text>
-              </v-card>
-            </v-tab-item>
-          </v-tabs-items>
-          <v-card elevation="0">
-            <v-card-text class="pt-0">
-              <v-col class="pt-2">
+                </v-tab-item>
+                <v-tab-item key="url">
+                  <v-col>
+                    <v-row>
+                      <v-col cols="12">
+                        <v-text-field
+                          v-model.trim="url.target"
+                          label="Target URL"
+                          outlined
+                          maxlength="512"
+                          background-color="#2d2d2d"
+                          hide-details="auto"
+                          :error-messages="urlTargetErrors"
+                          required
+                          :disabled="formLoadStatus === STATUS.LOADING"
+                          @blur="$v.url.target.$touch()"
+                        />
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                </v-tab-item>
+                <v-tab-item key="file">
+                  <v-col>
+                    <v-row>
+                      FILE EDITOR
+                    </v-row>
+                  </v-col>
+                </v-tab-item>
+              </v-tabs-items>
+              <v-col>
                 <v-expand-transition>
                   <div v-if="formLoadStatus === STATUS.ERROR">
                     <v-alert type="error" text class="mb-6">
@@ -142,7 +149,7 @@
                   <div class="mt-4">
                     <v-text-field
                       v-model="linkView"
-                      filled
+                      outlined
                       dense
                       class="rounded code-field"
                       background-color="#2d2d2d"
@@ -157,7 +164,7 @@
                   <div class="mt-4">
                     <v-text-field
                       v-model="linkRaw"
-                      filled
+                      outlined
                       dense
                       class="rounded code-field"
                       background-color="#2d2d2d"
@@ -180,7 +187,7 @@
 import Vue from "vue";
 import { STATUS } from "@/constants/status";
 import { languages } from "@/constants/languages";
-import { maxLength, required } from "vuelidate/lib/validators";
+import { maxLength, required, url } from "vuelidate/lib/validators";
 import "@/styles/Create.sass";
 
 import Prism from "prismjs";
@@ -197,6 +204,9 @@ export default Vue.extend({
         languageSelect: languages,
         data: ""
       },
+      url: {
+        target: ""
+      },
       formLoadStatus: STATUS.IDLE,
       linkView: "",
       linkRaw: ""
@@ -210,12 +220,23 @@ export default Vue.extend({
       !this.$v.snippet.name.required && errors.push("Name required");
       !this.$v.snippet.name.maxLength && errors.push("Name too long");
       return errors;
+    },
+    urlTargetErrors() {
+      const errors: string[] = [];
+      if (!this.$v.url.target?.$dirty) return errors;
+      !this.$v.url.target.required && errors.push("Target URL required");
+      !this.$v.url.target.url && errors.push("Invalid URL");
+      !this.$v.url.target.maxLength && errors.push("URL too long");
+      return errors;
     }
   },
 
   validations: {
     snippet: {
       name: { required, maxLength: maxLength(50) }
+    },
+    url: {
+      target: { required, url, maxLength: maxLength(512) }
     }
   },
 
