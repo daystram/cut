@@ -154,9 +154,13 @@
                       class="rounded code-field"
                       background-color="#2d2d2d"
                       append-icon="mdi-clipboard-text-multiple"
+                      id="view-link"
+                      @click:append="intoClipboard('view-link')"
                       readonly
-                      hide-details="auto"
-                    />
+                      persistent-hint
+                      :hint="copiedTooltip.view ? 'Copied to clipboard!' : ''"
+                    >
+                    </v-text-field>
                   </div>
                   <div class="my-4">
                     To get view the raw cut, use the following.
@@ -169,8 +173,11 @@
                       class="rounded code-field"
                       background-color="#2d2d2d"
                       append-icon="mdi-clipboard-text-multiple"
+                      id="raw-link"
+                      @click:append="intoClipboard('raw-link')"
                       readonly
-                      hide-details="auto"
+                      persistent-hint
+                      :hint="copiedTooltip.raw ? 'Copied to clipboard!' : ''"
                     />
                   </div>
                 </v-col>
@@ -207,9 +214,15 @@ export default Vue.extend({
       url: {
         target: ""
       },
-      formLoadStatus: STATUS.IDLE,
-      linkView: "",
-      linkRaw: ""
+      formLoadStatus: STATUS.COMPLETE,
+      linkView: "asdasdasdVIEW",
+      linkRaw: "qwfazsvagfvRAW",
+      copiedTooltip: {
+        view: false,
+        raw: false,
+        viewTimeout: 0,
+        rawTimeout: 0
+      }
     };
   },
 
@@ -277,8 +290,55 @@ export default Vue.extend({
               console.error(err);
             });
           break;
+        case 1:
+          this.$v.url.$touch();
+          if (this.$v.url.$invalid) return;
+          this.formLoadStatus = STATUS.LOADING;
+          console.log("Creating URL");
+          api.cut
+            .create({
+              name: this.url.target,
+              variant: "url",
+              metadata: JSON.stringify({}),
+              data: this.url.target
+            })
+            .then(response => {
+              this.formLoadStatus = STATUS.COMPLETE;
+              this.url.target = "";
+              this.linkView = `${window.origin}/${response.data.hash}`;
+              this.linkRaw = `${window.origin}/raw/${response.data.hash}`;
+              this.$v.url.$reset();
+            })
+            .catch(err => {
+              this.formLoadStatus = STATUS.ERROR;
+              console.error(err);
+            });
+          break;
         default:
           this.formLoadStatus = STATUS.IDLE;
+      }
+    },
+    intoClipboard(id: string) {
+      const target: HTMLTextAreaElement | null = document.querySelector(
+        `#${id}`
+      );
+      if (!target) return;
+      target.select();
+      document.execCommand("copy");
+      if (id === "view-link") {
+        this.copiedTooltip.view = true;
+        clearTimeout(this.copiedTooltip.viewTimeout);
+        this.copiedTooltip.viewTimeout = setTimeout(
+          () => (this.copiedTooltip.view = false),
+          5000
+        );
+      } else if (id === "raw-link") {
+        this.copiedTooltip.raw = true;
+        clearTimeout(this.copiedTooltip.rawTimeout);
+        this.copiedTooltip.rawTimeout = setTimeout(
+          () => (this.copiedTooltip.raw = false),
+          5000
+        );
       }
     }
   }
