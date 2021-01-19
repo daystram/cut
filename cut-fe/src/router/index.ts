@@ -33,7 +33,15 @@ const routes: Array<RouteConfig> = [
         name: "manage:create",
         component: Create,
         meta: {
-          title: "Create | Cut"
+          title: "Create Cut | Cut"
+        }
+      },
+      {
+        path: "list",
+        name: "manage:list",
+        component: {},
+        meta: {
+          title: "My Cuts | Cut"
         }
       }
     ]

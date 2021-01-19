@@ -69,9 +69,15 @@
         <v-list-item-group color="primary">
           <v-list-item :to="{ name: 'manage:create' }">
             <v-list-item-icon>
-              <v-icon v-text="'mdi-view-dashboard'" />
+              <v-icon v-text="'mdi-pencil'" />
             </v-list-item-icon>
-            <v-list-item-title v-text="'Create'" />
+            <v-list-item-title v-text="'Create Cut'" />
+          </v-list-item>
+          <v-list-item :to="{ name: 'manage:list' }">
+            <v-list-item-icon>
+              <v-icon v-text="'mdi-list'" />
+            </v-list-item-icon>
+            <v-list-item-title v-text="'My Cuts'" />
           </v-list-item>
         </v-list-item-group>
       </v-list>
