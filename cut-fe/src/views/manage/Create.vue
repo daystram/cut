@@ -214,9 +214,9 @@ export default Vue.extend({
       url: {
         target: ""
       },
-      formLoadStatus: STATUS.COMPLETE,
-      linkView: "asdasdasdVIEW",
-      linkRaw: "qwfazsvagfvRAW",
+      formLoadStatus: STATUS.IDLE,
+      linkView: "",
+      linkRaw: "",
       copiedTooltip: {
         view: false,
         raw: false,
