@@ -4,7 +4,7 @@ import { ACCESS_TOKEN } from "@/auth/AuthManager";
 import router from "@/router";
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "http://localhost:9090/api/v1/"
+  baseURL: "/api/v1/"
 });
 
 apiClient.interceptors.response.use(
