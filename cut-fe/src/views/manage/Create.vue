@@ -33,10 +33,10 @@
                           label="Name"
                           filled
                           dense
-                          counter
                           maxlength="50"
                           class="rounded"
                           background-color="#2d2d2d"
+                          hide-details="auto"
                           :error-messages="snippetNameErrors"
                           required
                           :disabled="formLoadStatus === STATUS.LOADING"
