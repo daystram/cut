@@ -9,6 +9,7 @@ export const KEY_CODE = "code";
 export const KEY_TOKEN = "token";
 export const ACCESS_TOKEN = "access_token";
 export const ID_TOKEN = "id_token";
+const EXPIRE_DATE = "expire_date";
 
 interface AuthManagerOptions {
   clientId: string;
@@ -87,7 +88,11 @@ export class AuthManager {
   }
 
   isAuthenticated(): boolean {
-    return this.getToken(ACCESS_TOKEN) !== "";
+    return this.getToken(ACCESS_TOKEN) !== "" && this._accessTokenValid();
+  }
+
+  _accessTokenValid(): boolean {
+    return new Date(this.getToken(EXPIRE_DATE)) > new Date();
   }
 
   getToken(tokenKey: string): string {
@@ -96,8 +101,9 @@ export class AuthManager {
     );
   }
 
-  getUser(): User {
-    return jwtDecode(this.getToken(ID_TOKEN));
+  getUser(): User | null {
+    if (this.isAuthenticated()) return jwtDecode(this.getToken(ID_TOKEN));
+    return null;
   }
 
   reset() {
@@ -131,6 +137,9 @@ export class AuthManager {
         /* eslint-enable @typescript-eslint/camelcase */
       })
       .then(response => {
+        response.data[EXPIRE_DATE] = new Date(
+          new Date().getTime() + response.data.expires_in * 1000
+        );
         this.storageManager.setItem(KEY_TOKEN, JSON.stringify(response.data));
         return response;
       });
