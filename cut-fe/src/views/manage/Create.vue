@@ -60,7 +60,7 @@
                       </v-col>
                     </v-row>
                     <v-row>
-                      <v-col>
+                      <v-col class="py-0">
                         <prism-editor
                           v-model="snippet.data"
                           :highlight="highlighter"
@@ -86,7 +86,14 @@
           </v-tabs-items>
           <v-card elevation="0">
             <v-card-text class="pt-0">
-              <v-col>
+              <v-col class="pt-2">
+                <v-expand-transition>
+                  <div v-if="formLoadStatus === STATUS.ERROR">
+                    <v-alert type="error" text class="mb-6">
+                      Failed creating cut!
+                    </v-alert>
+                  </div>
+                </v-expand-transition>
                 <v-btn
                   block
                   large
@@ -127,14 +134,6 @@
             </v-card-title>
             <v-divider inset />
             <div class="v-card__body">
-              <!-- <v-alert
-                type="success"
-                text
-                dense
-                transition="scroll-y-transition"
-              >
-                Snippet cut created!
-              </v-alert> -->
               <v-row align="center">
                 <v-col>
                   <div class="mb-4">
@@ -253,7 +252,7 @@ export default Vue.extend({
               this.$v.snippet.$reset();
             })
             .catch(err => {
-              this.formLoadStatus = STATUS.IDLE;
+              this.formLoadStatus = STATUS.ERROR;
               console.error(err);
             });
           break;
