@@ -1,7 +1,12 @@
 import Prism from "prismjs";
 
-export const languages = {
-  Plaintext: { grammar: null, language: "" },
+export const languages: {
+  [name: string]: {
+    grammar: Prism.Grammar;
+    language: string;
+  };
+} = {
+  Plaintext: { grammar: Prism.languages.text, language: "" },
   HTML: { grammar: Prism.languages.html, language: "html" },
   CSS: { grammar: Prism.languages.css, language: "css" },
   Javascript: { grammar: Prism.languages.js, language: "js" },
