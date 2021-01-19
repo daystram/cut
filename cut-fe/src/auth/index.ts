@@ -58,7 +58,7 @@ const refreshAuth = function(destinationPath: string) {
 };
 
 const authenticatedOnly = function(to: Route, from: Route, next: () => void) {
-  if (authManager.getToken(ACCESS_TOKEN)) {
+  if (authManager.isAuthenticated()) {
     next();
   } else {
     refreshAuth(to.fullPath);
@@ -70,7 +70,7 @@ const unAuthenticatedOnly = function(
   from: object,
   next: () => void
 ) {
-  if (!authManager.getToken(ACCESS_TOKEN)) {
+  if (!authManager.isAuthenticated()) {
     next();
   } else {
     router.push({ name: "manage:create" });
