@@ -10,7 +10,7 @@ const authManager = new AuthManager({
   clientId: CLIENT_ID,
   redirectUri: REDIRECT_URI,
   issuer: ISSUER,
-  storage: sessionStorage
+  storage: localStorage
 });
 
 const login = function() {
