@@ -8,7 +8,7 @@ import {
   logout,
   unAuthenticatedOnly
 } from "@/auth";
-import { Manage, Create } from "@/views";
+import { Manage, Create, View } from "@/views";
 
 Vue.use(VueRouter);
 
@@ -24,13 +24,12 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: "/",
-    beforeEnter: authenticatedOnly,
     component: Manage,
-    redirect: "/create",
     children: [
       {
         path: "create",
         name: "manage:create",
+        beforeEnter: authenticatedOnly,
         component: Create,
         meta: {
           title: "Create Cut | Cut"
@@ -39,6 +38,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "list",
         name: "manage:list",
+        beforeEnter: authenticatedOnly,
         component: {},
         meta: {
           title: "My Cuts | Cut"
@@ -64,7 +64,20 @@ const routes: Array<RouteConfig> = [
     beforeEnter: unAuthenticatedOnly,
     component: callback
   },
-  { path: "*", redirect: { name: "home", query: {} } }
+  {
+    path: "*",
+    component: Manage,
+    children: [
+      {
+        path: "/:hash",
+        name: "view",
+        component: View,
+        meta: {
+          title: "View Cut | Cut"
+        }
+      }
+    ]
+  }
 ];
 
 const router = new VueRouter({

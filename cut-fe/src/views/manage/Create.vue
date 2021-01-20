@@ -25,7 +25,7 @@
             <v-card-text class="px-0">
               <v-tabs-items v-model="variant">
                 <v-tab-item key="snippet">
-                  <v-col class="px-4">
+                  <v-col class="px-6">
                     <v-row>
                       <v-col cols="12" sm="8">
                         <v-text-field
@@ -66,7 +66,7 @@
                   </v-col>
                 </v-tab-item>
                 <v-tab-item key="url">
-                  <v-col class="px-4">
+                  <v-col class="px-6">
                     <v-row>
                       <v-col cols="12">
                         <v-text-field
@@ -86,14 +86,14 @@
                   </v-col>
                 </v-tab-item>
                 <v-tab-item key="file">
-                  <v-col class="px-4">
+                  <v-col class="px-6">
                     <v-row>
                       FILE EDITOR
                     </v-row>
                   </v-col>
                 </v-tab-item>
               </v-tabs-items>
-              <v-col class="px-4">
+              <v-col class="px-6">
                 <v-expand-transition>
                   <div v-if="formLoadStatus === STATUS.ERROR">
                     <v-alert type="error" text class="mb-6">
