@@ -1,16 +1,16 @@
+import { RatifyClient } from "@daystram/ratify-client";
 import router from "@/router";
-import { AuthManager, ACCESS_TOKEN } from "@/auth/AuthManager";
 import { Route } from "vue-router";
 
 const CLIENT_ID = process.env.VUE_APP_CLIENT_ID;
 const ISSUER = process.env.VUE_APP_OAUTH_ISSUER;
 const REDIRECT_URI = `${location.origin}/callback`;
 
-const authManager = new AuthManager({
+const authManager = new RatifyClient({
   clientId: CLIENT_ID,
   redirectUri: REDIRECT_URI,
   issuer: ISSUER,
-  storage: sessionStorage
+  storage: localStorage
 });
 
 const login = function() {
@@ -58,7 +58,7 @@ const refreshAuth = function(destinationPath: string) {
 };
 
 const authenticatedOnly = function(to: Route, from: Route, next: () => void) {
-  if (authManager.getToken(ACCESS_TOKEN)) {
+  if (authManager.isAuthenticated()) {
     next();
   } else {
     refreshAuth(to.fullPath);
@@ -70,7 +70,7 @@ const unAuthenticatedOnly = function(
   from: object,
   next: () => void
 ) {
-  if (!authManager.getToken(ACCESS_TOKEN)) {
+  if (!authManager.isAuthenticated()) {
     next();
   } else {
     router.push({ name: "manage:create" });

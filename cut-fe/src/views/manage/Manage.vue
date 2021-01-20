@@ -2,6 +2,7 @@
   <div class="manage fill-height">
     <v-app-bar app clipped-left>
       <v-app-bar-nav-icon
+        v-if="user"
         class="hidden-lg-and-up"
         @click.stop="drawer = !drawer"
       />
@@ -9,13 +10,14 @@
         <router-link
           class="text-md-h4 text-h5 text-center"
           style="text-decoration: none; color: inherit;"
-          :to="{ name: 'manage:create' }"
+          :to="user ? { name: 'manage:create' } : { name: 'home' }"
         >
           <Logo />
         </router-link>
       </h1>
       <v-spacer />
       <v-menu
+        v-if="user"
         right
         nudge-bottom="12px"
         offset-y
@@ -63,15 +65,29 @@
           </v-list-item-group>
         </v-list>
       </v-menu>
+      <v-btn
+        v-else
+        :to="{ name: 'login' }"
+        elevation="6"
+        rounded
+        v-text="'Sign In'"
+        color="primary darken-2"
+      />
     </v-app-bar>
-    <v-navigation-drawer app clipped v-model="drawer">
+    <v-navigation-drawer v-if="user" app clipped v-model="drawer">
       <v-list nav dense rounded>
         <v-list-item-group color="primary">
           <v-list-item :to="{ name: 'manage:create' }">
             <v-list-item-icon>
-              <v-icon v-text="'mdi-view-dashboard'" />
+              <v-icon v-text="'mdi-pencil'" />
             </v-list-item-icon>
-            <v-list-item-title v-text="'Create'" />
+            <v-list-item-title v-text="'Create Cut'" />
+          </v-list-item>
+          <v-list-item :to="{ name: 'manage:list' }">
+            <v-list-item-icon>
+              <v-icon v-text="'mdi-clipboard-list-outline'" />
+            </v-list-item-icon>
+            <v-list-item-title v-text="'My Cuts'" />
           </v-list-item>
         </v-list-item-group>
       </v-list>

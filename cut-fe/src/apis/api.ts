@@ -1,10 +1,14 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { ACCESS_TOKEN } from "@daystram/ratify-client";
 import { authManager, refreshAuth } from "@/auth";
-import { ACCESS_TOKEN } from "@/auth/AuthManager";
 import router from "@/router";
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "/api/v1/"
+  baseURL: `${
+    process.env.NODE_ENV === "development"
+      ? process.env.VUE_APP_DEV_BASE_API
+      : ""
+  }/api/v1/`
 });
 
 apiClient.interceptors.response.use(
@@ -25,4 +29,13 @@ const withAuth = () => ({
   }
 });
 
-export default {};
+export default {
+  cut: {
+    get: function(hash: string): Promise<AxiosResponse> {
+      return apiClient.get(`cut/${hash}`);
+    },
+    create: function(cut: object): Promise<AxiosResponse> {
+      return apiClient.post(`cut`, cut, withAuth());
+    }
+  }
+};
