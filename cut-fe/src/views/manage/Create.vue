@@ -192,8 +192,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { STATUS } from "@/constants/status";
-import { languages } from "@/constants/languages";
+import { expiries, languages, STATUS } from "@/constants";
 import { maxLength, required, url } from "vuelidate/lib/validators";
 import "@/styles/Create.sass";
 
