@@ -42,7 +42,7 @@ pub async fn get_cut(m: web::Data<Module>, req: HttpRequest) -> impl Responder {
 #[post("")]
 pub async fn post_snippet_create(
     m: web::Data<Module>,
-    cut: web::Json<Cut>,
+    mut cut: web::Json<Cut>,
     req: HttpRequest,
 ) -> impl Responder {
     let user: TokenInfo = match handlers::auth::authorize(&m, &req).await {
@@ -57,7 +57,8 @@ pub async fn post_snippet_create(
         constants::VARIANT_URL => (),
         _ => return HttpResponse::BadRequest().finish(),
     };
-    match handlers::cut::insert(m, user.sub, cut.0) {
+    cut.0.owner = user.sub;
+    match handlers::cut::insert(m, cut.0) {
         Ok(hash) => HttpResponse::Ok().json(CreateResponse { hash: hash }),
         Err(e) => HttpResponse::InternalServerError().body(format!("{:?}", e)),
     }
