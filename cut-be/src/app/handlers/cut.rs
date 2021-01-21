@@ -3,19 +3,16 @@ use crate::core::error::{HandlerError, HandlerErrorKind};
 use crate::utils::hash;
 use actix_web::web;
 use r2d2_redis::redis::Commands;
-use std::{
-    collections::HashMap,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::collections::HashMap;
 
-pub fn get_one(m: web::Data<Module>, id: String) -> Result<Cut, HandlerError> {
+pub fn get_one(m: web::Data<Module>, hash: String) -> Result<Cut, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
-    match rd.hgetall::<String, HashMap<String, String>>(format!("cut::{}", id)) {
+    let cut: Cut = match rd.hgetall::<String, HashMap<String, String>>(format!("cut::{}", hash)) {
         Ok(res) => {
             if res.is_empty() {
                 return Err(HandlerErrorKind::CutNotFoundError.into());
             }
-            Ok(Cut {
+            Cut {
                 name: res
                     .get("name")
                     .ok_or(HandlerErrorKind::CutNotFoundError)?
@@ -40,33 +37,26 @@ pub fn get_one(m: web::Data<Module>, id: String) -> Result<Cut, HandlerError> {
                     .get("created_at")
                     .ok_or(HandlerErrorKind::CutNotFoundError)?
                     .parse()?,
-            })
+                views: res
+                    .get("views")
+                    .ok_or(HandlerErrorKind::CutNotFoundError)?
+                    .parse()?,
+            }
         }
+        Err(e) => return Err(e.into()),
+    };
+    match rd.hset::<String, &str, u64, i32>(format!("cut::{}", hash), "views", cut.views + 1) {
+        Ok(_) => Ok(cut),
         Err(e) => Err(e.into()),
     }
 }
 
-pub fn insert(
-    m: web::Data<Module>,
-    user_subject: String,
-    cut: Cut,
-) -> Result<String, HandlerError> {
+pub fn insert(m: web::Data<Module>, cut: Cut) -> Result<String, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
     let hash: String = hash::generate(HASH_LENGTH).into();
-    let created_at = match SystemTime::now().duration_since(UNIX_EPOCH) {
-        Ok(duration) => duration.as_secs(),
-        Err(_) => return Err(HandlerErrorKind::GeneralError.into()),
-    };
     match rd.hset_multiple::<String, &str, String, String>(
         format!("cut::{}", hash.clone()),
-        &[
-            ("name", cut.name),
-            ("owner", user_subject),
-            ("variant", cut.variant),
-            ("metadata", cut.metadata),
-            ("data", cut.data),
-            ("created_at", created_at.to_string()),
-        ],
+        &cut.to_array(),
     ) {
         Ok(_) => Ok(hash),
         Err(e) => Err(e.into()),
