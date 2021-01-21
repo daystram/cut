@@ -23,7 +23,44 @@ fn current_time() -> u64 {
 }
 
 impl Cut {
-    pub fn to_array(&self) -> [(&str, String); 7] {
+    pub fn from_hashmap(res: HashMap<String, String>) -> Result<Self, HandlerError> {
+        Ok(Cut {
+            name: res
+                .get("name")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .to_string(),
+            owner: res
+                .get("owner")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .to_string(),
+            variant: res
+                .get("variant")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .to_string(),
+            metadata: res
+                .get("metadata")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .to_string(),
+            data: res
+                .get("data")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .to_string(),
+            expiry: res
+                .get("expiry")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .parse()?,
+            created_at: res
+                .get("created_at")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .parse()?,
+            views: res
+                .get("views")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .parse()?,
+        })
+    }
+
+    pub fn to_array(&self) -> [(&str, String); 8] {
         return [
             ("name", self.name.clone()),
             ("owner", self.owner.clone()),
