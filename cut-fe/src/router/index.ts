@@ -32,7 +32,7 @@ const routes: Array<RouteConfig> = [
         beforeEnter: authenticatedOnly,
         component: Create,
         meta: {
-          title: "Create Cut | Cut"
+          title: "Create | Cut"
         }
       },
       {

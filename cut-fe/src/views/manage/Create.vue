@@ -3,7 +3,7 @@
     <v-row class="mb-8" align="center">
       <v-col cols="12" sm="">
         <h1 class="text-h2">
-          Create Cut
+          Create
         </h1>
       </v-col>
     </v-row>

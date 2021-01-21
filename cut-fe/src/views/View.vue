@@ -2,7 +2,7 @@
   <div class="view">
     <v-fade-transition>
       <div v-show="pageLoadStatus === STATUS.COMPLETE">
-        <v-row class="mb-8" align="center">
+        <v-row class="mb-0" align="center">
           <v-col cols="12" sm="">
             <h1 class="text-h2">
               <div v-if="variant === 'snippet'">
@@ -15,6 +15,37 @@
                 Download File
               </div>
             </h1>
+            <div class="mx-n2 mt-2">
+              <v-chip color="secondary" class="ma-2" outlined small>
+                <v-avatar left>
+                  <v-icon v-text="'mdi-calendar-edit'" small />
+                </v-avatar>
+                {{
+                  Intl.DateTimeFormat("default", {
+                    dateStyle: "full",
+                    timeStyle: "medium"
+                  }).format(createdAt)
+                }}
+              </v-chip>
+              <v-chip color="primary" class="ma-2" outlined small>
+                <v-avatar left>
+                  <v-icon v-text="'mdi-eye'" small />
+                </v-avatar>
+                {{ views }}
+              </v-chip>
+              <v-chip
+                v-if="variant === 'snippet'"
+                color="accent"
+                class="ma-2"
+                outlined
+                small
+              >
+                <v-avatar left>
+                  <v-icon v-text="'mdi-code-braces'" small />
+                </v-avatar>
+                {{ snippet.language }}
+              </v-chip>
+            </div>
           </v-col>
         </v-row>
         <v-row>
@@ -104,6 +135,8 @@ export default Vue.extend({
   data() {
     return {
       variant: "",
+      createdAt: new Date(),
+      views: 0,
       snippet: {
         name: "",
         language: "Plaintext",
@@ -152,6 +185,8 @@ export default Vue.extend({
               this.snippet.name = data.name;
               this.snippet.data = data.data;
               this.snippet.language = metadata.language;
+              this.views = data.views;
+              this.createdAt = new Date(data.created_at * 1000);
               break;
             case "url":
               this.url.target = data.data;
