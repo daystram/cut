@@ -65,13 +65,13 @@
                           </div>
                         </v-expand-transition>
                         <div>
-                        <prism-editor
-                          v-model="snippet.data"
-                          :highlight="highlighter"
-                          line-numbers
-                          class="snippet-editor rounded"
+                          <prism-editor
+                            v-model="snippet.data"
+                            :highlight="highlighter(snippet.language)"
+                            line-numbers
+                            class="snippet-editor rounded"
                             @input="() => (snippet.emptyError = false)"
-                        />
+                          />
                         </div>
                       </v-col>
                     </v-row>
@@ -223,13 +223,13 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { expiries, languages, STATUS } from "@/constants";
 import { maxLength, required, url } from "vuelidate/lib/validators";
-import "@/styles/Create.sass";
-
-import Prism from "prismjs";
-import "@/styles/prism-atom-dark.css";
 import api from "@/apis/api";
+import { expiries, languages, STATUS } from "@/constants";
+import { highlighter } from "@/utils/highlighter";
+
+import "@/styles/Create.sass";
+import "@/styles/prism-atom-dark.css";
 
 export default Vue.extend({
   data() {
@@ -343,15 +343,7 @@ export default Vue.extend({
           this.formLoadStatus = STATUS.IDLE;
       }
     },
-    highlighter(code: string): string {
-      if (this.snippet.language === "Plaintext") return code;
-      Prism.highlightAll();
-      return Prism.highlight(
-        code,
-        languages[this.snippet.language].grammar,
-        languages[this.snippet.language].language
-      );
-    },
+    highlighter: (language: string) => highlighter(language),
     intoClipboard(id: string) {
       const target: HTMLTextAreaElement | null = document.querySelector(
         `#${id}`

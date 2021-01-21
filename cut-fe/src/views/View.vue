@@ -56,7 +56,7 @@
                       <v-col>
                         <prism-editor
                           v-model="snippet.data"
-                          :highlight="highlighter"
+                          :highlight="highlighter(snippet.language)"
                           line-numbers
                           readonly
                           class="snippet-editor rounded"
@@ -121,13 +121,12 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { STATUS } from "@/constants/status";
-import { languages } from "@/constants/languages";
-import "@/styles/Create.sass";
-
-import Prism from "prismjs";
-import "@/styles/prism-atom-dark.css";
 import api from "@/apis/api";
+import { STATUS } from "@/constants/status";
+import { highlighter } from "@/utils/highlighter";
+
+import "@/styles/Create.sass";
+import "@/styles/prism-atom-dark.css";
 
 export default Vue.extend({
   data() {
@@ -138,21 +137,12 @@ export default Vue.extend({
       snippet: {
         name: "",
         language: "Plaintext",
-        languageSelect: languages,
         data: ""
       },
       url: {
         target: ""
       },
-      pageLoadStatus: STATUS.IDLE,
-      linkView: "",
-      linkRaw: "",
-      copiedTooltip: {
-        view: false,
-        raw: false,
-        viewTimeout: 0,
-        rawTimeout: 0
-      }
+      pageLoadStatus: STATUS.LOADING
     };
   },
 
@@ -161,15 +151,6 @@ export default Vue.extend({
   },
 
   methods: {
-    highlighter(code: string): string {
-      if (this.snippet.language === "Plaintext") return code;
-      Prism.highlightAll();
-      return Prism.highlight(
-        code,
-        languages[this.snippet.language].grammar,
-        languages[this.snippet.language].language
-      );
-    },
     getCut(hash: string) {
       this.pageLoadStatus = STATUS.LOADING;
       api.cut
@@ -198,9 +179,9 @@ export default Vue.extend({
         })
         .catch(err => {
           this.pageLoadStatus = STATUS.ERROR;
-          console.error(err);
         });
-    }
+    },
+    highlighter: (language: string) => highlighter(language)
   }
 });
 </script>
