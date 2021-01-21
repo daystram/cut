@@ -161,11 +161,12 @@
                 <v-col cols="auto">
                   <v-btn
                     text
-                    icon
-                    color="grey"
+                    color="primary"
+                    rounded
+                    outlined
                     @click="() => (formLoadStatus = STATUS.IDLE)"
                   >
-                    <v-icon v-text="'mdi-close'" />
+                    Confirm
                   </v-btn>
                 </v-col>
               </v-row>
