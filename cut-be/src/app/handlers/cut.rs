@@ -7,7 +7,8 @@ use std::collections::HashMap;
 
 pub fn get_one(m: web::Data<Module>, hash: String) -> Result<Cut, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
-    let cut: Cut = match rd.hgetall::<String, HashMap<String, String>>(format!("cut::{}", hash)) {
+    let key = format!("cut::{}", hash);
+    let mut cut: Cut = match rd.hgetall::<String, HashMap<String, String>>(key.clone()) {
         Ok(res) => {
             if res.is_empty() {
                 return Err(HandlerErrorKind::CutNotFoundError.into());
@@ -16,20 +17,29 @@ pub fn get_one(m: web::Data<Module>, hash: String) -> Result<Cut, HandlerError> 
         }
         Err(e) => return Err(e.into()),
     };
-    match rd.hset::<String, &str, u64, i32>(format!("cut::{}", hash), "views", cut.views + 1) {
-        Ok(_) => Ok(cut),
-        Err(e) => Err(e.into()),
+    cut.views += 1;
+    if cut.expiry < 0 {
+        let _ = rd.del::<String, i32>(key.clone());
+    } else {
+        let _ = rd.hset::<String, &str, u64, i32>(key.clone(), "views", cut.views);
     }
+    Ok(cut)
 }
 
 pub fn insert(m: web::Data<Module>, cut: Cut) -> Result<String, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
     let hash: String = hash::generate(HASH_LENGTH).into();
-    match rd.hset_multiple::<String, &str, String, String>(
-        format!("cut::{}", hash.clone()),
-        &cut.to_array(),
-    ) {
-        Ok(_) => Ok(hash),
+    let key = format!("cut::{}", hash.clone());
+    match rd.hset_multiple::<String, &str, String, String>(key.clone(), &cut.to_array()) {
+        Ok(_) => {
+            if cut.expiry < 0 {
+                return Ok(hash);
+            };
+            match rd.expire::<String, i32>(key.clone(), cut.expiry as usize) {
+                Ok(_) => Ok(hash),
+                Err(e) => Err(e.into()),
+            }
+        }
         Err(e) => Err(e.into()),
     }
 }

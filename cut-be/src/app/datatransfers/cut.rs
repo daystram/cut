@@ -1,4 +1,6 @@
+use crate::core::error::{HandlerError, HandlerErrorKind};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -9,6 +11,7 @@ pub struct Cut {
     pub variant: String,
     pub metadata: String,
     pub data: String,
+    pub expiry: i64,
     #[serde(default = "current_time")]
     pub created_at: u64,
     #[serde(default = "Default::default")]
@@ -67,6 +70,7 @@ impl Cut {
             ("variant", self.variant.clone()),
             ("metadata", self.metadata.clone()),
             ("data", self.data.clone()),
+            ("expiry", self.expiry.to_string()),
             ("created_at", self.created_at.to_string()),
             ("views", self.views.to_string()),
         ];
