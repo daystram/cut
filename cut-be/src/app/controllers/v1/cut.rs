@@ -14,7 +14,9 @@ pub async fn get_cut_raw(m: web::Data<Module>, req: HttpRequest) -> impl Respond
     let id: String = req.match_info().query("id").parse().unwrap();
     match handlers::cut::get_one(m, id) {
         Ok(cut) => match cut.variant.as_str() {
-            constants::VARIANT_SNIPPET => HttpResponse::Ok().body(cut.data),
+            constants::VARIANT_SNIPPET => HttpResponse::Ok()
+                .header("Content-Type", "text/plain")
+                .body(cut.data),
             constants::VARIANT_URL => HttpResponse::TemporaryRedirect()
                 .header("Location", cut.data)
                 .finish(),
