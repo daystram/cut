@@ -178,13 +178,13 @@ export default Vue.extend({
           const data = response.data;
           const metadata = JSON.parse(data.metadata);
           this.variant = data.variant;
+          this.views = data.views;
+          this.createdAt = new Date(data.created_at * 1000);
           switch (response.data.variant) {
             case "snippet":
               this.snippet.name = data.name;
               this.snippet.data = data.data;
               this.snippet.language = metadata.language;
-              this.views = data.views;
-              this.createdAt = new Date(data.created_at * 1000);
               break;
             case "url":
               this.url.target = data.data;
