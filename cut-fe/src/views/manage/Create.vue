@@ -57,12 +57,22 @@
                         />
                       </v-col>
                       <v-col>
+                        <v-expand-transition>
+                          <div v-if="snippet.emptyError">
+                            <v-alert type="error" text class="mb-6" dense>
+                              Snippet may not be empty!
+                            </v-alert>
+                          </div>
+                        </v-expand-transition>
+                        <div>
                         <prism-editor
                           v-model="snippet.data"
                           :highlight="highlighter"
                           line-numbers
                           class="snippet-editor rounded"
+                            @input="() => (snippet.emptyError = false)"
                         />
+                        </div>
                       </v-col>
                     </v-row>
                   </v-col>
@@ -229,9 +239,10 @@ export default Vue.extend({
       expirySelect: expiries,
       snippet: {
         name: "",
-        language: "Plaintext",
+        language: Object.keys(languages)[0],
         languageSelect: languages,
-        data: ""
+        data: "",
+        emptyError: false
       },
       url: {
         target: ""
@@ -280,9 +291,11 @@ export default Vue.extend({
       switch (this.variant) {
         case 0:
           this.$v.snippet.$touch();
-          if (this.$v.snippet.$invalid) return;
+          if (this.$v.snippet.$invalid || !this.snippet.data.trim()) {
+            this.snippet.emptyError = !this.snippet.data.trim();
+            return;
+          }
           this.formLoadStatus = STATUS.LOADING;
-          console.log("Creating SNIPPET");
           api.cut
             .create({
               name: this.snippet.name,
@@ -299,16 +312,14 @@ export default Vue.extend({
               this.linkRaw = `${window.origin}/raw/${response.data.hash}`;
               this.$v.snippet.$reset();
             })
-            .catch(err => {
+            .catch(() => {
               this.formLoadStatus = STATUS.ERROR;
-              console.error(err);
             });
           break;
         case 1:
           this.$v.url.$touch();
           if (this.$v.url.$invalid) return;
           this.formLoadStatus = STATUS.LOADING;
-          console.log("Creating URL");
           api.cut
             .create({
               name: this.url.target,
@@ -324,9 +335,8 @@ export default Vue.extend({
               this.linkRaw = `${window.origin}/raw/${response.data.hash}`;
               this.$v.url.$reset();
             })
-            .catch(err => {
+            .catch(() => {
               this.formLoadStatus = STATUS.ERROR;
-              console.error(err);
             });
           break;
         default:

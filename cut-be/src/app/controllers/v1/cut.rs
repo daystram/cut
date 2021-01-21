@@ -59,6 +59,9 @@ pub async fn post_snippet_create(
         constants::VARIANT_URL => (),
         _ => return HttpResponse::BadRequest().finish(),
     };
+    if cut.data.trim().chars().count() == 0 {
+        return HttpResponse::BadRequest().finish();
+    };
     cut.0.owner = user.sub;
     match handlers::cut::insert(m, cut.0) {
         Ok(hash) => HttpResponse::Ok().json(CreateResponse { hash: hash }),
