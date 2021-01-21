@@ -3,7 +3,7 @@
     <v-row class="mb-8" align="center">
       <v-col cols="12" sm="">
         <h1 class="text-h2">
-          Create Cut
+          Create
         </h1>
       </v-col>
     </v-row>
@@ -32,6 +32,7 @@
                           v-model.trim="snippet.name"
                           label="Name"
                           outlined
+                          dense
                           maxlength="50"
                           background-color="#2d2d2d"
                           hide-details="auto"
@@ -47,6 +48,7 @@
                           :items="Object.keys(snippet.languageSelect)"
                           label="Language"
                           outlined
+                          dense
                           background-color="#2d2d2d"
                           hide-details="auto"
                           style="border: none !important"
@@ -55,12 +57,22 @@
                         />
                       </v-col>
                       <v-col>
-                        <prism-editor
-                          v-model="snippet.data"
-                          :highlight="highlighter"
-                          line-numbers
-                          class="snippet-editor rounded"
-                        />
+                        <v-expand-transition>
+                          <div v-if="snippet.emptyError">
+                            <v-alert type="error" text class="mb-6" dense>
+                              Snippet may not be empty!
+                            </v-alert>
+                          </div>
+                        </v-expand-transition>
+                        <div>
+                          <prism-editor
+                            v-model="snippet.data"
+                            :highlight="highlighter(snippet.language)"
+                            line-numbers
+                            class="snippet-editor rounded"
+                            @input="() => (snippet.emptyError = false)"
+                          />
+                        </div>
                       </v-col>
                     </v-row>
                   </v-col>
@@ -101,16 +113,35 @@
                     </v-alert>
                   </div>
                 </v-expand-transition>
-                <v-btn
-                  block
-                  large
-                  color="primary darken-1"
-                  :disabled="formLoadStatus === STATUS.LOADING"
-                  :loading="formLoadStatus === STATUS.LOADING"
-                  @click="create"
-                >
-                  Create
-                </v-btn>
+                <v-row>
+                  <v-col cols="3">
+                    <v-select
+                      v-model="expiry"
+                      :items="Object.keys(expirySelect)"
+                      label="Expiry"
+                      outlined
+                      dense
+                      background-color="#2d2d2d"
+                      hide-details="auto"
+                      style="border: none !important"
+                      required
+                      :disabled="formLoadStatus === STATUS.LOADING"
+                    />
+                  </v-col>
+                  <v-col cols="9">
+                    <v-btn
+                      block
+                      outlined
+                      style="height: 100%"
+                      color="primary"
+                      :disabled="formLoadStatus === STATUS.LOADING"
+                      :loading="formLoadStatus === STATUS.LOADING"
+                      @click="create"
+                    >
+                      Cut
+                    </v-btn>
+                  </v-col>
+                </v-row>
               </v-col>
             </v-card-text>
           </v-card>
@@ -130,11 +161,12 @@
                 <v-col cols="auto">
                   <v-btn
                     text
-                    icon
-                    color="grey"
+                    color="primary"
+                    rounded
+                    outlined
                     @click="() => (formLoadStatus = STATUS.IDLE)"
                   >
-                    <v-icon v-text="'mdi-close'" />
+                    Confirm
                   </v-btn>
                 </v-col>
               </v-row>
@@ -192,24 +224,26 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { STATUS } from "@/constants/status";
-import { languages } from "@/constants/languages";
 import { maxLength, required, url } from "vuelidate/lib/validators";
-import "@/styles/Create.sass";
-
-import Prism from "prismjs";
-import "@/styles/prism-atom-dark.css";
 import api from "@/apis/api";
+import { expiries, languages, STATUS } from "@/constants";
+import { highlighter } from "@/utils/highlighter";
+
+import "@/styles/Create.sass";
+import "@/styles/prism-atom-dark.css";
 
 export default Vue.extend({
   data() {
     return {
       variant: 0,
+      expiry: Object.keys(expiries)[1],
+      expirySelect: expiries,
       snippet: {
         name: "",
-        language: "Plaintext",
+        language: Object.keys(languages)[0],
         languageSelect: languages,
-        data: ""
+        data: "",
+        emptyError: false
       },
       url: {
         target: ""
@@ -254,28 +288,22 @@ export default Vue.extend({
   },
 
   methods: {
-    highlighter(code: string): string {
-      if (this.snippet.language === "Plaintext") return code;
-      Prism.highlightAll();
-      return Prism.highlight(
-        code,
-        languages[this.snippet.language].grammar,
-        languages[this.snippet.language].language
-      );
-    },
     create() {
       switch (this.variant) {
         case 0:
           this.$v.snippet.$touch();
-          if (this.$v.snippet.$invalid) return;
+          if (this.$v.snippet.$invalid || !this.snippet.data.trim()) {
+            this.snippet.emptyError = !this.snippet.data.trim();
+            return;
+          }
           this.formLoadStatus = STATUS.LOADING;
-          console.log("Creating SNIPPET");
           api.cut
             .create({
               name: this.snippet.name,
               variant: "snippet",
               metadata: JSON.stringify({ language: this.snippet.language }),
-              data: this.snippet.data
+              data: this.snippet.data,
+              expiry: expiries[this.expiry]
             })
             .then(response => {
               this.formLoadStatus = STATUS.COMPLETE;
@@ -285,22 +313,21 @@ export default Vue.extend({
               this.linkRaw = `${window.origin}/raw/${response.data.hash}`;
               this.$v.snippet.$reset();
             })
-            .catch(err => {
+            .catch(() => {
               this.formLoadStatus = STATUS.ERROR;
-              console.error(err);
             });
           break;
         case 1:
           this.$v.url.$touch();
           if (this.$v.url.$invalid) return;
           this.formLoadStatus = STATUS.LOADING;
-          console.log("Creating URL");
           api.cut
             .create({
               name: this.url.target,
               variant: "url",
               metadata: JSON.stringify({}),
-              data: this.url.target
+              data: this.url.target,
+              expiry: expiries[this.expiry]
             })
             .then(response => {
               this.formLoadStatus = STATUS.COMPLETE;
@@ -309,15 +336,15 @@ export default Vue.extend({
               this.linkRaw = `${window.origin}/raw/${response.data.hash}`;
               this.$v.url.$reset();
             })
-            .catch(err => {
+            .catch(() => {
               this.formLoadStatus = STATUS.ERROR;
-              console.error(err);
             });
           break;
         default:
           this.formLoadStatus = STATUS.IDLE;
       }
     },
+    highlighter: (language: string) => highlighter(language),
     intoClipboard(id: string) {
       const target: HTMLTextAreaElement | null = document.querySelector(
         `#${id}`

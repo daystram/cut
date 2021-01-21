@@ -32,7 +32,7 @@ const routes: Array<RouteConfig> = [
         beforeEnter: authenticatedOnly,
         component: Create,
         meta: {
-          title: "Create Cut | Cut"
+          title: "Create | Cut"
         }
       },
       {
@@ -75,6 +75,10 @@ const routes: Array<RouteConfig> = [
         meta: {
           title: "View Cut | Cut"
         }
+      },
+      {
+        path: "*",
+        redirect: { name: "home" }
       }
     ]
   }

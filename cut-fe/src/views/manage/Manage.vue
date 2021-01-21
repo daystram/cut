@@ -81,7 +81,7 @@
             <v-list-item-icon>
               <v-icon v-text="'mdi-pencil'" />
             </v-list-item-icon>
-            <v-list-item-title v-text="'Create Cut'" />
+            <v-list-item-title v-text="'Create'" />
           </v-list-item>
           <v-list-item :to="{ name: 'manage:list' }">
             <v-list-item-icon>
