@@ -10,7 +10,7 @@ use std::{
 
 pub fn get_one(m: web::Data<Module>, id: String) -> Result<Cut, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
-    match rd.hgetall::<String, HashMap<String, String>>(id) {
+    match rd.hgetall::<String, HashMap<String, String>>(format!("cut::{}", id)) {
         Ok(res) => {
             if res.is_empty() {
                 return Err(HandlerErrorKind::CutNotFoundError.into());
@@ -58,7 +58,7 @@ pub fn insert(
         Err(_) => return Err(HandlerErrorKind::GeneralError.into()),
     };
     match rd.hset_multiple::<String, &str, String, String>(
-        hash.clone(),
+        format!("cut::{}", hash.clone()),
         &[
             ("name", cut.name),
             ("owner", user_subject),
