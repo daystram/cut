@@ -32,6 +32,7 @@
                           v-model.trim="snippet.name"
                           label="Name"
                           outlined
+                          dense
                           maxlength="50"
                           background-color="#2d2d2d"
                           hide-details="auto"
@@ -47,6 +48,7 @@
                           :items="Object.keys(snippet.languageSelect)"
                           label="Language"
                           outlined
+                          dense
                           background-color="#2d2d2d"
                           hide-details="auto"
                           style="border: none !important"
@@ -101,16 +103,35 @@
                     </v-alert>
                   </div>
                 </v-expand-transition>
-                <v-btn
-                  block
-                  large
-                  color="primary darken-1"
-                  :disabled="formLoadStatus === STATUS.LOADING"
-                  :loading="formLoadStatus === STATUS.LOADING"
-                  @click="create"
-                >
-                  Create
-                </v-btn>
+                <v-row>
+                  <v-col cols="3">
+                    <v-select
+                      v-model="expiry"
+                      :items="Object.keys(expirySelect)"
+                      label="Expiry"
+                      outlined
+                      dense
+                      background-color="#2d2d2d"
+                      hide-details="auto"
+                      style="border: none !important"
+                      required
+                      :disabled="formLoadStatus === STATUS.LOADING"
+                    />
+                  </v-col>
+                  <v-col cols="9">
+                    <v-btn
+                      block
+                      outlined
+                      style="height: 100%"
+                      color="primary"
+                      :disabled="formLoadStatus === STATUS.LOADING"
+                      :loading="formLoadStatus === STATUS.LOADING"
+                      @click="create"
+                    >
+                      Cut
+                    </v-btn>
+                  </v-col>
+                </v-row>
               </v-col>
             </v-card-text>
           </v-card>
@@ -204,6 +225,8 @@ export default Vue.extend({
   data() {
     return {
       variant: 0,
+      expiry: Object.keys(expiries)[1],
+      expirySelect: expiries,
       snippet: {
         name: "",
         language: "Plaintext",
@@ -253,15 +276,6 @@ export default Vue.extend({
   },
 
   methods: {
-    highlighter(code: string): string {
-      if (this.snippet.language === "Plaintext") return code;
-      Prism.highlightAll();
-      return Prism.highlight(
-        code,
-        languages[this.snippet.language].grammar,
-        languages[this.snippet.language].language
-      );
-    },
     create() {
       switch (this.variant) {
         case 0:
@@ -274,7 +288,8 @@ export default Vue.extend({
               name: this.snippet.name,
               variant: "snippet",
               metadata: JSON.stringify({ language: this.snippet.language }),
-              data: this.snippet.data
+              data: this.snippet.data,
+              expiry: expiries[this.expiry]
             })
             .then(response => {
               this.formLoadStatus = STATUS.COMPLETE;
@@ -299,7 +314,8 @@ export default Vue.extend({
               name: this.url.target,
               variant: "url",
               metadata: JSON.stringify({}),
-              data: this.url.target
+              data: this.url.target,
+              expiry: expiries[this.expiry]
             })
             .then(response => {
               this.formLoadStatus = STATUS.COMPLETE;
@@ -316,6 +332,15 @@ export default Vue.extend({
         default:
           this.formLoadStatus = STATUS.IDLE;
       }
+    },
+    highlighter(code: string): string {
+      if (this.snippet.language === "Plaintext") return code;
+      Prism.highlightAll();
+      return Prism.highlight(
+        code,
+        languages[this.snippet.language].grammar,
+        languages[this.snippet.language].language
+      );
     },
     intoClipboard(id: string) {
       const target: HTMLTextAreaElement | null = document.querySelector(

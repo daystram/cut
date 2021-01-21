@@ -2,18 +2,16 @@
   <div class="view">
     <v-fade-transition>
       <div v-show="pageLoadStatus === STATUS.COMPLETE">
-        <v-row class="mb-0" align="center">
+        <v-row class="mb-2" align="center">
           <v-col cols="12" sm="">
-            <h1 class="text-h2">
-              <div v-if="variant === 'snippet'">
-                {{ snippet.name }}
-              </div>
-              <div v-if="variant === 'url'">
-                Redirecting...
-              </div>
-              <div v-if="variant === 'file'">
-                Download File
-              </div>
+            <h1 class="text-h2 text-truncate" v-if="variant === 'snippet'">
+              {{ snippet.name }}
+            </h1>
+            <h1 class="text-h2" v-if="variant === 'url'">
+              Redirecting...
+            </h1>
+            <h1 class="text-h2" v-if="variant === 'file'">
+              Download File
             </h1>
             <div class="mx-n2 mt-2">
               <v-chip color="secondary" class="ma-2" outlined small>
