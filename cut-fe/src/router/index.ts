@@ -75,6 +75,10 @@ const routes: Array<RouteConfig> = [
         meta: {
           title: "View Cut | Cut"
         }
+      },
+      {
+        path: "*",
+        redirect: { name: "home" }
       }
     ]
   }
