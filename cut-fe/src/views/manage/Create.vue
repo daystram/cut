@@ -114,7 +114,7 @@
                   </div>
                 </v-expand-transition>
                 <v-row>
-                  <v-col cols="3">
+                  <v-col cols="12" sm="4" md="3">
                     <v-select
                       v-model="expiry"
                       :items="Object.keys(expirySelect)"
@@ -128,11 +128,11 @@
                       :disabled="formLoadStatus === STATUS.LOADING"
                     />
                   </v-col>
-                  <v-col cols="9">
+                  <v-col cols="12" sm="8" md="9">
                     <v-btn
                       block
                       outlined
-                      style="height: 100%"
+                      style="height: 40px"
                       color="primary"
                       :disabled="formLoadStatus === STATUS.LOADING"
                       :loading="formLoadStatus === STATUS.LOADING"

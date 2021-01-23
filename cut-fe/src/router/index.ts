@@ -73,7 +73,7 @@ const routes: Array<RouteConfig> = [
         name: "view",
         component: View,
         meta: {
-          title: "View Cut | Cut"
+          title: "Cut"
         }
       },
       {
