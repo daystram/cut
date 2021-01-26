@@ -28,8 +28,10 @@ pub fn get_one(m: web::Data<Module>, hash: String) -> Result<Cut, HandlerError> 
 
 pub fn insert(m: web::Data<Module>, cut: Cut) -> Result<String, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
-    let hash: String = hash::generate(HASH_LENGTH).into();
-    let key = format!("cut::{}", hash.clone());
+pub fn insert(m: web::Data<Module>, mut cut: Cut) -> Result<String, HandlerError> {
+    let rd = &mut m.rd_pool.get()?;
+    cut.hash = hash::generate(HASH_LENGTH).into();
+    let key = format!("cut::{}", cut.hash.clone());
     match rd.hset_multiple::<String, &str, String, String>(key.clone(), &cut.to_array()) {
         Ok(_) => {
             if cut.expiry < 0 {

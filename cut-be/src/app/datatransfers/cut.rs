@@ -6,6 +6,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Cut {
     pub name: String,
+    #[serde(skip_deserializing)]
+    pub hash: String,
     #[serde(skip)]
     pub owner: String,
     pub variant: String,
@@ -30,6 +32,10 @@ impl Cut {
         Ok(Cut {
             name: res
                 .get("name")
+                .ok_or(HandlerErrorKind::RedisError)?
+                .to_string(),
+            hash: res
+                .get("hash")
                 .ok_or(HandlerErrorKind::RedisError)?
                 .to_string(),
             owner: res
@@ -63,9 +69,10 @@ impl Cut {
         })
     }
 
-    pub fn to_array(&self) -> [(&str, String); 8] {
+    pub fn to_array(&self) -> [(&str, String); 9] {
         return [
             ("name", self.name.clone()),
+            ("hash", self.hash.clone()),
             ("owner", self.owner.clone()),
             ("variant", self.variant.clone()),
             ("metadata", self.metadata.clone()),
