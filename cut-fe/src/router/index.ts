@@ -8,7 +8,7 @@ import {
   logout,
   unAuthenticatedOnly
 } from "@/auth";
-import { Manage, Create, View } from "@/views";
+import { Manage, Create, View, List } from "@/views";
 
 Vue.use(VueRouter);
 
@@ -39,7 +39,7 @@ const routes: Array<RouteConfig> = [
         path: "list",
         name: "manage:list",
         beforeEnter: authenticatedOnly,
-        component: {},
+        component: List,
         meta: {
           title: "My Cuts | Cut"
         }
