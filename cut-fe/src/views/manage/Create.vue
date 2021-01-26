@@ -146,11 +146,7 @@
             </v-card-text>
           </v-card>
         </v-card>
-        <v-dialog
-          :value="formLoadStatus === STATUS.COMPLETE"
-          width="500"
-          persistent
-        >
+        <v-dialog :value="formLoadStatus === STATUS.COMPLETE" width="420">
           <v-card>
             <v-card-title>
               <v-row no-gutters align="center">
@@ -160,13 +156,11 @@
                 <v-spacer />
                 <v-col cols="auto">
                   <v-btn
-                    text
-                    color="primary"
-                    rounded
-                    outlined
+                    class="text--secondary"
+                    icon
                     @click="() => (formLoadStatus = STATUS.IDLE)"
                   >
-                    Confirm
+                    <v-icon>mdi-close</v-icon>
                   </v-btn>
                 </v-col>
               </v-row>

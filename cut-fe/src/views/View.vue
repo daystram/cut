@@ -20,8 +20,12 @@
                 </v-avatar>
                 {{
                   Intl.DateTimeFormat("default", {
-                    dateStyle: "full",
-                    timeStyle: "medium"
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric"
                   }).format(createdAt)
                 }}
               </v-chip>
