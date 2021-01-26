@@ -34,14 +34,27 @@ pub fn insert(m: web::Data<Module>, mut cut: Cut) -> Result<String, HandlerError
     let key = format!("cut::{}", cut.hash.clone());
     match rd.hset_multiple::<String, &str, String, String>(key.clone(), &cut.to_array()) {
         Ok(_) => {
-            if cut.expiry < 0 {
-                return Ok(hash);
+            if cut.expiry >= 0 {
+                if let Err(e) = rd.expire::<String, i32>(key.clone(), cut.expiry as usize) {
+                    let _ = rd.del::<String, i32>(key.clone());
+                    return Err(e.into())
+                }
             };
-            match rd.expire::<String, i32>(key.clone(), cut.expiry as usize) {
-                Ok(_) => Ok(hash),
-                Err(e) => Err(e.into()),
-            }
         }
-        Err(e) => Err(e.into()),
+        Err(e) => return Err(e.into()),
+    };
+    let timestamp = if cut.expiry >= 0 {
+        (SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64) + cut.expiry
+    } else {
+        cut.expiry
+    };
+    match rd.zadd::<String, i64, String, i32>(format!("cut_list::{}", cut.owner.clone()), key.clone(), timestamp) {
+        Ok(_) => {
+            Ok(cut.hash)
+        },
+        Err(e) => {
+            let _ = rd.del::<String, i32>(key.clone());
+            Err(e.into())
+        }
     }
 }
