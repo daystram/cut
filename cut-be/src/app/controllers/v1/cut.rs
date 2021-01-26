@@ -29,6 +29,26 @@ pub async fn get_cut_raw(m: web::Data<Module>, req: HttpRequest) -> impl Respond
     }
 }
 
+#[get("/list")]
+pub async fn get_cut_list(m: web::Data<Module>, req: HttpRequest) -> impl Responder {
+    let user: TokenInfo = match handlers::auth::authorize(&m, &req).await {
+        Ok(res) => res,
+        Err(e) => match e.kind {
+            HandlerErrorKind::UnauthorizedError => return HttpResponse::Unauthorized().finish(),
+            _ => return HttpResponse::InternalServerError().finish(),
+        },
+    };
+    match handlers::cut::get_list(m, user.sub) {
+        Ok(list) => {
+            HttpResponse::Ok().json(list)
+        },
+        Err(e) => match e.kind {
+            HandlerErrorKind::CutNotFoundError => HttpResponse::NotFound().finish(),
+            _ => HttpResponse::InternalServerError().body(format!("{:?}", e)),
+        },
+    }
+}
+
 #[get("/{id}")]
 pub async fn get_cut(m: web::Data<Module>, req: HttpRequest) -> impl Responder {
     let id: String = req.match_info().query("id").parse().unwrap();
@@ -48,7 +68,7 @@ pub async fn post_snippet_create(
     req: HttpRequest,
 ) -> impl Responder {
     let user: TokenInfo = match handlers::auth::authorize(&m, &req).await {
-        Ok(resp) => resp,
+        Ok(res) => res,
         Err(e) => match e.kind {
             HandlerErrorKind::UnauthorizedError => return HttpResponse::Unauthorized().finish(),
             _ => return HttpResponse::InternalServerError().finish(),
