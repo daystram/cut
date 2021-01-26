@@ -1,3 +1,5 @@
+use std::time::UNIX_EPOCH;
+use std::time::SystemTime;
 use crate::app::{constants::HASH_LENGTH, datatransfers::cut::Cut, Module};
 use crate::core::error::{HandlerError, HandlerErrorKind};
 use crate::utils::hash;
@@ -26,8 +28,23 @@ pub fn get_one(m: web::Data<Module>, hash: String) -> Result<Cut, HandlerError> 
     Ok(cut)
 }
 
-pub fn insert(m: web::Data<Module>, cut: Cut) -> Result<String, HandlerError> {
+pub fn get_list(m: web::Data<Module>, owner: String) -> Result<Vec<Cut>, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
+    let key = format!("cut_list::{}", owner.clone());
+    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+    rd.zrembyscore::<String, i64, i64, i32>(key.clone(), 0, timestamp)?;
+    let cut_keys = rd.zrangebyscore::<String, i64, String, Vec<String>>(key.clone(), -1, "+inf".into())?;
+    let mut cuts = Vec::new();
+    for cut_key in &cut_keys {
+        if let Ok(res) = rd.hgetall::<String, HashMap<String, String>>(cut_key.clone()) {
+                if !res.is_empty() {
+                    cuts.push(Cut::from_hashmap(res)?)
+                }
+            }
+    };
+    Ok(cuts)
+}
+
 pub fn insert(m: web::Data<Module>, mut cut: Cut) -> Result<String, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
     cut.hash = hash::generate(HASH_LENGTH).into();
