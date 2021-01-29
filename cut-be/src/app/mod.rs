@@ -1,5 +1,5 @@
 use crate::core::config;
-use actix_web::{middleware::Logger, App, HttpServer};
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use r2d2::Pool;
 use r2d2_redis::RedisConnectionManager;
 
@@ -35,6 +35,7 @@ pub async fn start() -> std::io::Result<()> {
                 rd_pool: rd_pool.clone(),
             })
             .wrap(Logger::default())
+            .data(web::JsonConfig::default().limit(constants::MAX_SIZE_SNIPPET))
             .configure(router::init)
     })
     .bind(format!(

@@ -2,6 +2,7 @@
 pub enum HandlerErrorKind {
     UnauthorizedError,
     CutNotFoundError,
+    FormParseError,
     RedisError,
     GeneralError,
 }
@@ -23,6 +24,10 @@ impl From<HandlerErrorKind> for HandlerError {
                 kind: HandlerErrorKind::CutNotFoundError,
                 message: "cut not found".into(),
             },
+            HandlerErrorKind::FormParseError => HandlerError {
+                kind: HandlerErrorKind::FormParseError,
+                message: "failed parsing cut from form-data".into(),
+            },
             _ => HandlerError {
                 kind: HandlerErrorKind::GeneralError,
                 message: format!("an error has occurred. {:?}", error),
@@ -35,6 +40,15 @@ impl From<std::num::ParseIntError> for HandlerError {
     fn from(error: std::num::ParseIntError) -> Self {
         HandlerError {
             kind: HandlerErrorKind::GeneralError,
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<std::string::FromUtf8Error> for HandlerError {
+    fn from(error: std::string::FromUtf8Error) -> Self {
+        HandlerError {
+            kind: HandlerErrorKind::RedisError,
             message: error.to_string(),
         }
     }
