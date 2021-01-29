@@ -19,12 +19,12 @@
             >
               <template v-slot:no-data>No cuts created</template>
               <template v-slot:item.name="{ item }">
-                <span
+                <div
                   class="d-inline-block text-truncate"
-                  style="max-width: 240px;"
+                  style="max-width: 240px; vertical-align: top;"
                 >
                   {{ item.name }}
-                </span>
+                </div>
               </template>
               <template v-slot:item.variant="{ item }">
                 <v-chip

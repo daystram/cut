@@ -121,7 +121,7 @@
                           <div v-if="file.files.length && !fileValid()">
                             <v-alert type="error" text class="mb-6" dense>
                               File too large! Maximum size is
-                              {{ formatUnit(file.maxSize) }}
+                              {{ formatUnit(file.maxSize) }}.
                             </v-alert>
                           </div>
                         </v-expand-transition>
@@ -253,13 +253,13 @@
               </v-row>
             </v-card-title>
             <v-divider inset />
-            <div class="v-card__body">
+            <div class="v-card__body pt-6">
               <v-row align="center">
                 <v-col>
-                  <div class="mb-4">
+                  <div class="mb-1">
                     Use the following link to share your cut.
                   </div>
-                  <div class="mt-4">
+                  <div>
                     <v-text-field
                       v-model="linkView"
                       outlined
@@ -275,10 +275,10 @@
                     >
                     </v-text-field>
                   </div>
-                  <div class="my-4">
+                  <div class="mb-1">
                     To get view the raw cut, use the following.
                   </div>
-                  <div class="mt-4">
+                  <div>
                     <v-text-field
                       v-model="linkRaw"
                       outlined
