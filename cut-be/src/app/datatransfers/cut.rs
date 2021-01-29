@@ -95,52 +95,52 @@ impl Cut {
         Ok(Cut {
             name: String::from_utf8(
                 res.get("name")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?,
             hash: String::from_utf8(
                 res.get("hash")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?,
             owner: String::from_utf8(
                 res.get("owner")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?,
             variant: String::from_utf8(
                 res.get("variant")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?,
             metadata: String::from_utf8(
                 res.get("metadata")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?,
             data: String::from_utf8(
                 res.get("data")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?,
             expiry: String::from_utf8(
                 res.get("expiry")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?
-                .parse()?,
+            .parse()?,
             created_at: String::from_utf8(
                 res.get("created_at")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?
-                .parse()?,
+            .parse()?,
             views: String::from_utf8(
                 res.get("views")
-                .ok_or(HandlerErrorKind::RedisError)?
+                    .ok_or(HandlerErrorKind::RedisError)?
                     .to_vec(),
             )?
-                .parse()?,
+            .parse()?,
             file: Default::default(),
         })
     }
