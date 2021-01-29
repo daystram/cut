@@ -15,6 +15,11 @@ pub fn init(app: &mut web::ServiceConfig) {
             web::scope("/api/v1")
                 .service(web::scope("/ping").service(v1::ping::get_ping))
                 .service(
+                    web::scope("/cut/file")
+                        .wrap(form.clone())
+                        .service(v1::cut::post_file_upload),
+                )
+                .service(
                     web::scope("/cut")
                         .service(v1::cut::get_cut_list)
                         .service(v1::cut::get_cut)

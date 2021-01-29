@@ -39,9 +39,7 @@ pub async fn get_cut_list(m: web::Data<Module>, req: HttpRequest) -> impl Respon
         },
     };
     match handlers::cut::get_list(m, user.sub) {
-        Ok(list) => {
-            HttpResponse::Ok().json(list)
-        },
+        Ok(list) => HttpResponse::Ok().json(list),
         Err(e) => match e.kind {
             HandlerErrorKind::CutNotFoundError => HttpResponse::NotFound().finish(),
             _ => HttpResponse::InternalServerError().body(format!("{:?}", e)),
@@ -84,6 +82,30 @@ pub async fn post_snippet_create(
     };
     cut.0.owner = user.sub;
     match handlers::cut::insert(m, cut.0) {
+        Ok(hash) => HttpResponse::Ok().json(CreateResponse { hash: hash }),
+        Err(e) => HttpResponse::InternalServerError().body(format!("{:?}", e)),
+    }
+}
+
+#[post("")]
+pub async fn post_file_upload(
+    m: web::Data<Module>,
+    form: Value,
+    req: HttpRequest,
+) -> impl Responder {
+    let user: TokenInfo = match handlers::auth::authorize(&m, &req).await {
+        Ok(res) => res,
+        Err(e) => match e.kind {
+            HandlerErrorKind::UnauthorizedError => return HttpResponse::Unauthorized().finish(),
+            _ => return HttpResponse::InternalServerError().finish(),
+        },
+    };
+    let mut cut: Cut = match Cut::from_form(form) {
+        Ok(cut) => cut,
+        Err(e) => return HttpResponse::InternalServerError().body(format!("{:?}", e)),
+    };
+    cut.owner = user.sub;
+    match handlers::cut::insert(m, cut) {
         Ok(hash) => HttpResponse::Ok().json(CreateResponse { hash: hash }),
         Err(e) => HttpResponse::InternalServerError().body(format!("{:?}", e)),
     }
