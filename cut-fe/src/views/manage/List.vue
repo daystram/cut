@@ -17,6 +17,7 @@
               hide-default-footer
               class="elevation-4"
             >
+              <template v-slot:no-data>No cuts created</template>
               <template v-slot:item.name="{ item }">
                 <span
                   class="d-inline-block text-truncate"
