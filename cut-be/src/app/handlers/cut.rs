@@ -131,3 +131,11 @@ pub fn insert(m: web::Data<Module>, mut cut: Cut) -> Result<String, HandlerError
         }
     }
 }
+pub fn delete(m: web::Data<Module>, cut: Cut) -> Result<(), HandlerError> {
+    let rd = &mut m.rd_pool.get()?;
+    let key = format!("cut::{}", cut.hash);
+    rd.del::<String, i32>(key.clone())?;
+    rd.del::<String, i32>(format!("cut_file::{}", cut.hash))?;
+    rd.zrem::<String, String, i32>(format!("cut_file::{}", cut.owner), key)?;
+    Ok(())
+}
