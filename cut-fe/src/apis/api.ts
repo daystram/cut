@@ -39,6 +39,18 @@ export default {
     },
     create: function(cut: object): Promise<AxiosResponse> {
       return apiClient.post(`cut`, cut, withAuth());
+    },
+    createFile: function(
+      data: FormData,
+      onUploadProgress: (progressEvent: { loaded: number }) => void
+    ): Promise<AxiosResponse> {
+      return apiClient.post(`cut/file`, data, {
+        headers: {
+          Authorization: `Bearer ${authManager.getToken(ACCESS_TOKEN)}`,
+          "Content-Type": "multipart/form-data"
+        },
+        onUploadProgress
+      });
     }
   }
 };
