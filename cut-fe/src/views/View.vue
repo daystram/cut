@@ -209,8 +209,7 @@ export default Vue.extend({
               this.file.name = data.name;
               this.file.size = metadata.size;
               this.file.type = metadata.type;
-              this.file.download = `http://localhost:9090/raw/${data.hash}`;
-              // this.file.download = `${window.origin}/raw/${data.hash}`;
+              this.file.download = `${window.origin}/raw/${data.hash}`;
               break;
             default:
               this.pageLoadStatus = STATUS.ERROR;
