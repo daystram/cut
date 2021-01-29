@@ -89,62 +89,76 @@ impl Cut {
         Ok(cut)
     }
 
+    pub fn from_hashmap(
+        res: std::collections::HashMap<std::string::String, Vec<u8>>,
+    ) -> Result<Self, HandlerError> {
         Ok(Cut {
-            name: res
-                .get("name")
+            name: String::from_utf8(
+                res.get("name")
                 .ok_or(HandlerErrorKind::RedisError)?
-                .to_string(),
-            hash: res
-                .get("hash")
+                    .to_vec(),
+            )?,
+            hash: String::from_utf8(
+                res.get("hash")
                 .ok_or(HandlerErrorKind::RedisError)?
-                .to_string(),
-            owner: res
-                .get("owner")
+                    .to_vec(),
+            )?,
+            owner: String::from_utf8(
+                res.get("owner")
                 .ok_or(HandlerErrorKind::RedisError)?
-                .to_string(),
-            variant: res
-                .get("variant")
+                    .to_vec(),
+            )?,
+            variant: String::from_utf8(
+                res.get("variant")
                 .ok_or(HandlerErrorKind::RedisError)?
-                .to_string(),
-            metadata: res
-                .get("metadata")
+                    .to_vec(),
+            )?,
+            metadata: String::from_utf8(
+                res.get("metadata")
                 .ok_or(HandlerErrorKind::RedisError)?
-                .to_string(),
-            data: res
-                .get("data")
+                    .to_vec(),
+            )?,
+            data: String::from_utf8(
+                res.get("data")
                 .ok_or(HandlerErrorKind::RedisError)?
-                .to_string(),
-            expiry: res
-                .get("expiry")
+                    .to_vec(),
+            )?,
+            expiry: String::from_utf8(
+                res.get("expiry")
                 .ok_or(HandlerErrorKind::RedisError)?
+                    .to_vec(),
+            )?
                 .parse()?,
-            created_at: res
-                .get("created_at")
+            created_at: String::from_utf8(
+                res.get("created_at")
                 .ok_or(HandlerErrorKind::RedisError)?
+                    .to_vec(),
+            )?
                 .parse()?,
-            views: res
-                .get("views")
+            views: String::from_utf8(
+                res.get("views")
                 .ok_or(HandlerErrorKind::RedisError)?
+                    .to_vec(),
+            )?
                 .parse()?,
+            file: Default::default(),
         })
     }
 
-    pub fn to_array(&self) -> [(&str, String); 9] {
+    pub fn to_array(&self) -> [(&str, Vec<u8>); 9] {
         return [
-            ("name", self.name.clone()),
-            ("hash", self.hash.clone()),
-            ("owner", self.owner.clone()),
-            ("variant", self.variant.clone()),
-            ("metadata", self.metadata.clone()),
-            ("data", self.data.clone()),
-            ("expiry", self.expiry.to_string()),
-            ("created_at", self.created_at.to_string()),
-            ("views", self.views.to_string()),
+            ("name", self.name.as_bytes().to_vec()),
+            ("hash", self.hash.as_bytes().to_vec()),
+            ("owner", self.owner.as_bytes().to_vec()),
+            ("variant", self.variant.as_bytes().to_vec()),
+            ("metadata", self.metadata.as_bytes().to_vec()),
+            ("data", self.data.as_bytes().to_vec()),
+            ("expiry", self.expiry.to_string().as_bytes().to_vec()),
+            (
+                "created_at",
+                self.created_at.to_string().as_bytes().to_vec(),
+            ),
+            ("views", self.views.to_string().as_bytes().to_vec()),
         ];
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CreateResponse {
-    pub hash: String,
 }
