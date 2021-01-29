@@ -17,6 +17,7 @@
               hide-default-footer
               class="elevation-4"
             >
+              <template v-slot:no-data>No cuts created</template>
               <template v-slot:item.name="{ item }">
                 <span
                   class="d-inline-block text-truncate"
@@ -104,13 +105,44 @@
                   </template>
 
                   <v-card width="420">
+                    <v-card-title>
+                      <v-row no-gutters align="center">
+                        <v-col cols="auto">
+                          Manage Cut
+                        </v-col>
+                        <v-spacer />
+                        <v-col cols="auto">
+                          <v-btn-toggle dense>
+                            <v-btn
+                              outlined
+                              color="primary lighten-1"
+                              :href="item.linkView"
+                              target="_blank"
+                              style="width: 50%"
+                            >
+                              View
+                            </v-btn>
+                            <v-btn
+                              outlined
+                              color="primary lighten-1"
+                              :href="item.linkRaw"
+                              target="_blank"
+                              style="width: 50%"
+                            >
+                              Raw
+                            </v-btn>
+                          </v-btn-toggle>
+                        </v-col>
+                      </v-row>
+                    </v-card-title>
+                    <v-divider inset />
                     <div class="v-card__body pt-6">
                       <v-row align="center">
                         <v-col>
-                          <div class="mb-4">
+                          <div class="mb-1">
                             Use the following link to share your cut.
                           </div>
-                          <div class="mt-4">
+                          <div>
                             <v-text-field
                               v-model="item.linkView"
                               outlined
@@ -132,10 +164,10 @@
                             >
                             </v-text-field>
                           </div>
-                          <div class="my-4">
+                          <div class="mb-1">
                             To get view the raw cut, use the following.
                           </div>
-                          <div class="mt-4">
+                          <div>
                             <v-text-field
                               v-model="item.linkRaw"
                               outlined
@@ -156,6 +188,35 @@
                               "
                             />
                           </div>
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-expand-transition>
+                            <div v-show="item.formLoadStatus === STATUS.ERROR">
+                              <v-alert
+                                type="error"
+                                text
+                                dense
+                                transition="scroll-y-transition"
+                                class="mt-n2"
+                              >
+                                Failed deleting cut!
+                              </v-alert>
+                            </div>
+                          </v-expand-transition>
+                          <v-btn
+                            dense
+                            block
+                            text
+                            outlined
+                            color="error"
+                            :disabled="item.formLoadStatus === STATUS.LOADING"
+                            :loading="item.formLoadStatus === STATUS.LOADING"
+                            @click="deleteCut(item)"
+                          >
+                            Delete
+                          </v-btn>
                         </v-col>
                       </v-row>
                     </div>
@@ -244,7 +305,8 @@ export default Vue.extend({
               raw: false,
               viewTimeout: 0,
               rawTimeout: 0
-            }
+            },
+            formLoadStatus: STATUS.IDLE
           });
         }
         this.pageLoadStatus = STATUS.COMPLETE;
@@ -278,6 +340,18 @@ export default Vue.extend({
           5000
         );
       }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deleteCut(item: any) {
+      item.formLoadStatus = STATUS.LOADING;
+      api.cut
+        .delete(item.hash)
+        .then(() => {
+          this.cuts.splice(this.cuts.indexOf(item), 1);
+        })
+        .catch(() => {
+          item.formLoadStatus = STATUS.IDLE;
+        });
     }
   }
 });

@@ -514,6 +514,10 @@ export default Vue.extend({
       this.formLoadProgress =
         (progressEvent.loaded / this.file.files[0].file.size) * 100;
     }
+  },
+
+  beforeRouteLeave(to, from, next) {
+    if (this.formLoadStatus !== STATUS.LOADING) next();
   }
 });
 </script>

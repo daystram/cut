@@ -1,15 +1,18 @@
-use crate::app::datatransfers::cut_file::CutFile;
-use crate::app::{
-    constants::{HASH_LENGTH, VARIANT_FILE},
-    datatransfers::cut::Cut,
-    Module,
+use crate::{
+    app::{
+        constants::{HASH_LENGTH, VARIANT_FILE},
+        datatransfers::{cut::Cut, cut_file::CutFile},
+        Module,
+    },
+    core::error::{HandlerError, HandlerErrorKind},
+    utils::hash,
 };
-use crate::core::error::{HandlerError, HandlerErrorKind};
-use crate::utils::hash;
 use actix_web::web;
 use r2d2_redis::redis::Commands;
-use std::collections::HashMap;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    collections::HashMap,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 // Cut::file field not included
 pub fn get_one(m: web::Data<Module>, hash: String) -> Result<Cut, HandlerError> {
@@ -35,7 +38,7 @@ pub fn get_one(m: web::Data<Module>, hash: String) -> Result<Cut, HandlerError> 
 
 pub fn get_file(m: web::Data<Module>, hash: String) -> Result<CutFile, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
-    let key_file = format!("cut-file::{}", hash.clone());
+    let key_file = format!("cut_file::{}", hash.clone());
     let cut: Cut = match get_one(m, hash.clone()) {
         Ok(cut) => cut,
         Err(e) => return Err(e.into()),
@@ -84,7 +87,7 @@ pub fn insert(m: web::Data<Module>, mut cut: Cut) -> Result<String, HandlerError
     let rd = &mut m.rd_pool.get()?;
     cut.hash = hash::generate(HASH_LENGTH).into();
     let key = format!("cut::{}", cut.hash.clone());
-    let key_file = format!("cut-file::{}", cut.hash.clone());
+    let key_file = format!("cut_file::{}", cut.hash.clone());
     match rd.hset_multiple::<String, &str, Vec<u8>, String>(key.clone(), &cut.to_array()) {
         Ok(_) => {
             if cut.expiry >= 0 {
@@ -127,4 +130,12 @@ pub fn insert(m: web::Data<Module>, mut cut: Cut) -> Result<String, HandlerError
             Err(e.into())
         }
     }
+}
+pub fn delete(m: web::Data<Module>, cut: Cut) -> Result<(), HandlerError> {
+    let rd = &mut m.rd_pool.get()?;
+    let key = format!("cut::{}", cut.hash);
+    rd.del::<String, i32>(key.clone())?;
+    rd.del::<String, i32>(format!("cut_file::{}", cut.hash))?;
+    rd.zrem::<String, String, i32>(format!("cut_file::{}", cut.owner), key)?;
+    Ok(())
 }
