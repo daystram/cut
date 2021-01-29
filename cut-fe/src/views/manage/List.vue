@@ -350,7 +350,7 @@ export default Vue.extend({
           this.cuts.splice(this.cuts.indexOf(item), 1);
         })
         .catch(() => {
-          item.formLoadStatus = STATUS.IDLE;
+          item.formLoadStatus = STATUS.ERROR;
         });
     }
   }
