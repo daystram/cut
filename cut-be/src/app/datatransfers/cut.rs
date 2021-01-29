@@ -1,9 +1,12 @@
-use crate::core::error::{HandlerError, HandlerErrorKind};
+use crate::{
+    app::constants,
+    core::error::{HandlerError, HandlerErrorKind},
+};
+use actix_form_data::Value;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Cut {
     pub name: String,
     #[serde(skip_deserializing)]
@@ -18,6 +21,8 @@ pub struct Cut {
     pub created_at: u64,
     #[serde(default = "Default::default")]
     pub views: u64,
+    #[serde(skip)]
+    pub file: Vec<u8>,
 }
 
 fn current_time() -> u64 {
@@ -28,7 +33,62 @@ fn current_time() -> u64 {
 }
 
 impl Cut {
-    pub fn from_hashmap(res: HashMap<String, String>) -> Result<Self, HandlerError> {
+    pub fn from_form(form: Value) -> Result<Self, HandlerError> {
+        let mut cut = Cut {
+            name: Default::default(),
+            hash: Default::default(),
+            owner: Default::default(),
+            variant: constants::VARIANT_FILE.into(),
+            metadata: Default::default(),
+            data: Default::default(),
+            expiry: Default::default(),
+            created_at: current_time(),
+            views: Default::default(),
+            file: Default::default(),
+        };
+        match form {
+            Value::Map(mut hashmap) => {
+                match hashmap.remove("name") {
+                    Some(value) => match value {
+                        Value::Text(name) => cut.name = name,
+                        _ => return Err(HandlerErrorKind::FormParseError.into()),
+                    },
+                    None => return Err(HandlerErrorKind::FormParseError.into()),
+                };
+                match hashmap.remove("expiry") {
+                    Some(value) => match value {
+                        Value::Int(expiry) => cut.expiry = expiry,
+                        _ => return Err(HandlerErrorKind::FormParseError.into()),
+                    },
+                    None => return Err(HandlerErrorKind::FormParseError.into()),
+                };
+                match hashmap.remove("metadata") {
+                    Some(value) => match value {
+                        Value::Text(metadata) => cut.metadata = metadata,
+                        _ => return Err(HandlerErrorKind::FormParseError.into()),
+                    },
+                    None => return Err(HandlerErrorKind::FormParseError.into()),
+                };
+                match hashmap.remove("data") {
+                    Some(value) => match value {
+                        Value::Text(data) => cut.data = data,
+                        _ => return Err(HandlerErrorKind::FormParseError.into()),
+                    },
+                    None => return Err(HandlerErrorKind::FormParseError.into()),
+                };
+                match hashmap.remove("file") {
+                    Some(value) => match value {
+                        Value::Bytes(file) => cut.file = file.to_vec(),
+                        _ => return Err(HandlerErrorKind::FormParseError.into()),
+                    },
+                    None => return Err(HandlerErrorKind::FormParseError.into()),
+                };
+            }
+            _ => return Err(HandlerErrorKind::FormParseError.into()),
+        };
+        Ok(cut)
+    }
+
         Ok(Cut {
             name: res
                 .get("name")
