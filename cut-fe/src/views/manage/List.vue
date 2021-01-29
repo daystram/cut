@@ -1,14 +1,14 @@
 <template>
   <div class="list">
+    <v-row class="mb-8" align="center">
+      <v-col cols="12" sm="">
+        <h1 class="text-h2">
+          My Cuts
+        </h1>
+      </v-col>
+    </v-row>
     <v-fade-transition>
       <div v-show="pageLoadStatus === STATUS.COMPLETE">
-        <v-row class="mb-8" align="center">
-          <v-col cols="12" sm="">
-            <h1 class="text-h2">
-              My Cuts
-            </h1>
-          </v-col>
-        </v-row>
         <v-row>
           <v-col cols="12">
             <v-data-table
@@ -17,6 +17,14 @@
               hide-default-footer
               class="elevation-4"
             >
+              <template v-slot:item.name="{ item }">
+                <span
+                  class="d-inline-block text-truncate"
+                  style="max-width: 240px;"
+                >
+                  {{ item.name }}
+                </span>
+              </template>
               <template v-slot:item.variant="{ item }">
                 <v-chip
                   v-if="item.variant === 'snippet'"
@@ -235,7 +243,6 @@ export default Vue.extend({
             }
           });
         }
-        console.log(this.cuts);
         this.pageLoadStatus = STATUS.COMPLETE;
       })
       .catch(() => {
