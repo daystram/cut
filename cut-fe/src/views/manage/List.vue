@@ -83,7 +83,11 @@
                         minute: "numeric",
                         second: "numeric"
                       }).format(item.expires * 1000)
-                    : "After opened"
+                    : item.variant === "snippet"
+                    ? "After viewed"
+                    : item.variant === "url"
+                    ? "After used"
+                    : "After downloaded"
                 }}
               </template>
               <template v-slot:item.action="{ item }">
