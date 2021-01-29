@@ -86,7 +86,30 @@
                 <div v-if="variant === 'file'">
                   <v-col class="px-4">
                     <v-row>
-                      FILE VIEWER
+                      <v-col cols="12">
+                        <div class="text-center my-16">
+                          <v-icon
+                            x-large
+                            v-text="'mdi-file'"
+                            class="mb-2 text-h1"
+                          />
+                          <h3 class="text-h6 font-weight-normal">
+                            {{ file.name }}
+                          </h3>
+                          <div class="text-subtitle font-weight-light">
+                            {{ formatUnit(file.size) }}
+                          </div>
+                          <v-btn
+                            text
+                            outlined
+                            color="primary"
+                            class="mt-4"
+                            :href="file.download"
+                          >
+                            Download
+                          </v-btn>
+                        </div>
+                      </v-col>
                     </v-row>
                   </v-col>
                 </div>
@@ -131,6 +154,7 @@ import { highlighter } from "@/utils/highlighter";
 
 import "@/styles/Create.sass";
 import "@/styles/prism-atom-dark.css";
+import { formatUnit } from "@/utils/formatter";
 
 export default Vue.extend({
   data() {
@@ -145,6 +169,12 @@ export default Vue.extend({
       },
       url: {
         target: ""
+      },
+      file: {
+        name: "",
+        type: "",
+        size: 0,
+        download: ""
       },
       pageLoadStatus: STATUS.LOADING
     };
@@ -175,17 +205,25 @@ export default Vue.extend({
               this.url.target = data.data;
               setTimeout(() => (window.location.href = data.data), 2000);
               break;
+            case "file":
+              this.file.name = data.name;
+              this.file.size = metadata.size;
+              this.file.type = metadata.type;
+              this.file.download = `http://localhost:9090/raw/${data.hash}`;
+              // this.file.download = `${window.origin}/raw/${data.hash}`;
+              break;
             default:
               this.pageLoadStatus = STATUS.ERROR;
               return;
           }
           this.pageLoadStatus = STATUS.COMPLETE;
         })
-        .catch(err => {
+        .catch(() => {
           this.pageLoadStatus = STATUS.ERROR;
         });
     },
-    highlighter: (language: string) => highlighter(language)
+    highlighter: (language: string) => highlighter(language),
+    formatUnit: (size: number) => formatUnit(size)
   }
 });
 </script>
