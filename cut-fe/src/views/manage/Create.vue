@@ -10,6 +10,15 @@
     <v-row>
       <v-col cols="12">
         <v-card elevation="8" :loading="formLoadStatus === STATUS.LOADING">
+          <template v-slot:progress>
+            <v-progress-linear
+              :value="formLoadProgress"
+              :indeterminate="variant !== 2"
+              absolute
+              top
+              color="primary"
+            />
+          </template>
           <v-tabs v-model="variant" center-active grow>
             <v-tab key="snippet" :disabled="formLoadStatus === STATUS.LOADING">
               <v-icon v-text="'mdi-code-braces'" class="mr-2" />Snippet
@@ -100,7 +109,85 @@
                 <v-tab-item key="file">
                   <v-col class="px-6">
                     <v-row>
-                      FILE EDITOR
+                      <v-col cols="12">
+                        <v-expand-transition>
+                          <div v-if="file.emptyError">
+                            <v-alert type="error" text class="mb-6" dense>
+                              File required!
+                            </v-alert>
+                          </div>
+                        </v-expand-transition>
+                        <v-expand-transition>
+                          <div v-if="file.files.length && !fileValid()">
+                            <v-alert type="error" text class="mb-6" dense>
+                              File too large! Maximum size is
+                              {{ formatUnit(file.maxSize) }}
+                            </v-alert>
+                          </div>
+                        </v-expand-transition>
+                        <div id="file-drop-area" class="rounded pa-2">
+                          <div
+                            :class="
+                              `py-16 rounded ${
+                                $refs.upload && $refs.upload.dropActive
+                                  ? 'file-drop-active'
+                                  : 'file-drop-inactive'
+                              }`
+                            "
+                          >
+                            <div v-if="!file.files.length" class="text-center">
+                              <h3 class="text-button text-light">
+                                Drop File
+                              </h3>
+                              <div
+                                class="text-subtitle-2 font-weight-light mb-4"
+                              >
+                                or
+                              </div>
+                              <file-upload
+                                :multiple="false"
+                                :directory="false"
+                                :thread="4"
+                                drop="#file-drop-area"
+                                :drop-directory="false"
+                                v-model="file.files"
+                                ref="upload"
+                                @input="() => (file.emptyError = false)"
+                              >
+                                <v-btn
+                                  block
+                                  outlined
+                                  style="height: 40px"
+                                  color="primary"
+                                >
+                                  Select File
+                                </v-btn>
+                              </file-upload>
+                            </div>
+                            <div v-else class="text-center">
+                              <v-icon
+                                v-text="'mdi-file'"
+                                class="mt-6 mb-2 text-h1"
+                              />
+                              <h3 class="text-h6 font-weight-normal">
+                                {{ file.files[0].file.name }}
+                              </h3>
+                              <div class="text-subtitle font-weight-light">
+                                {{ formatUnit(file.files[0].file.size) }}
+                              </div>
+                              <v-btn
+                                plain
+                                color="error"
+                                class="mt-4"
+                                :disabled="formLoadStatus === STATUS.LOADING"
+                                @click="fileReset"
+                              >
+                                Delete
+                              </v-btn>
+                            </div>
+                          </div>
+                        </div>
+                      </v-col>
                     </v-row>
                   </v-col>
                 </v-tab-item>
@@ -218,15 +305,21 @@
 
 <script lang="ts">
 import Vue from "vue";
+import FileUpload from "vue-upload-component";
 import { maxLength, required, url } from "vuelidate/lib/validators";
 import api from "@/apis/api";
 import { expiries, languages, STATUS } from "@/constants";
 import { highlighter } from "@/utils/highlighter";
+import { formatUnit } from "@/utils/formatter";
 
 import "@/styles/Create.sass";
 import "@/styles/prism-atom-dark.css";
 
 export default Vue.extend({
+  components: {
+    FileUpload
+  },
+
   data() {
     return {
       variant: 0,
@@ -242,7 +335,15 @@ export default Vue.extend({
       url: {
         target: ""
       },
+      file: {
+        maxSize: 50 * 1000 * 1000,
+        files: new Array<{
+          file: File;
+        }>(), // vue-upload-component uses its own file struct in the array v-model
+        emptyError: false
+      },
       formLoadStatus: STATUS.IDLE,
+      formLoadProgress: 0,
       linkView: "",
       linkRaw: "",
       copiedTooltip: {
@@ -283,8 +384,9 @@ export default Vue.extend({
 
   methods: {
     create() {
+      this.formLoadProgress = 0;
       switch (this.variant) {
-        case 0:
+        case 0: {
           this.$v.snippet.$touch();
           if (this.$v.snippet.$invalid || !this.snippet.data.trim()) {
             this.snippet.emptyError = !this.snippet.data.trim();
@@ -311,7 +413,8 @@ export default Vue.extend({
               this.formLoadStatus = STATUS.ERROR;
             });
           break;
-        case 1:
+        }
+        case 1: {
           this.$v.url.$touch();
           if (this.$v.url.$invalid) return;
           this.formLoadStatus = STATUS.LOADING;
@@ -334,6 +437,39 @@ export default Vue.extend({
               this.formLoadStatus = STATUS.ERROR;
             });
           break;
+        }
+        case 2: {
+          if (!this.fileValid()) {
+            this.file.emptyError = !this.file.files.length;
+            return;
+          }
+          this.formLoadStatus = STATUS.LOADING;
+          const file: File = this.file.files[0].file;
+          const form = new FormData();
+          form.append("name", file.name);
+          form.append("expiry", expiries[this.expiry].toString());
+          form.append(
+            "metadata",
+            JSON.stringify({
+              type: file.type,
+              size: file.size
+            })
+          );
+          form.append("data", file.type);
+          form.append("file", file);
+          api.cut
+            .createFile(form, this.loadProgress)
+            .then(response => {
+              this.formLoadStatus = STATUS.COMPLETE;
+              this.file.files = [];
+              this.linkView = `${window.origin}/${response.data.hash}`;
+              this.linkRaw = `${window.origin}/raw/${response.data.hash}`;
+            })
+            .catch(() => {
+              this.formLoadStatus = STATUS.ERROR;
+            });
+          break;
+        }
         default:
           this.formLoadStatus = STATUS.IDLE;
       }
@@ -361,6 +497,22 @@ export default Vue.extend({
           5000
         );
       }
+    },
+    fileValid() {
+      return (
+        this.file.files.length === 1 &&
+        this.file.files[0].file.size <= this.file.maxSize
+      );
+    },
+    fileReset() {
+      this.file.files = [];
+    },
+    formatUnit(size: number) {
+      return formatUnit(size);
+    },
+    loadProgress(progressEvent: { loaded: number }) {
+      this.formLoadProgress =
+        (progressEvent.loaded / this.file.files[0].file.size) * 100;
     }
   }
 });
