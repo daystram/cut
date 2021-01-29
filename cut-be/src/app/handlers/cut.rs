@@ -62,17 +62,21 @@ pub fn get_file(m: web::Data<Module>, hash: String) -> Result<CutFile, HandlerEr
 pub fn get_list(m: web::Data<Module>, owner: String) -> Result<Vec<Cut>, HandlerError> {
     let rd = &mut m.rd_pool.get()?;
     let key = format!("cut_list::{}", owner.clone());
-    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
     rd.zrembyscore::<String, i64, i64, i32>(key.clone(), 0, timestamp)?;
-    let cut_keys = rd.zrangebyscore::<String, i64, String, Vec<String>>(key.clone(), -1, "+inf".into())?;
+    let cut_keys =
+        rd.zrangebyscore::<String, i64, String, Vec<String>>(key.clone(), -1, "+inf".into())?;
     let mut cuts = Vec::new();
     for cut_key in &cut_keys {
-        if let Ok(res) = rd.hgetall::<String, HashMap<String, String>>(cut_key.clone()) {
-                if !res.is_empty() {
-                    cuts.push(Cut::from_hashmap(res)?)
-                }
+        if let Ok(res) = rd.hgetall::<String, HashMap<String, Vec<u8>>>(cut_key.clone()) {
+            if !res.is_empty() {
+                cuts.push(Cut::from_hashmap(res)?);
             }
-    };
+        }
+    }
     Ok(cuts)
 }
 
