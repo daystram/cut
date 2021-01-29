@@ -51,6 +51,9 @@ export default {
         },
         onUploadProgress
       });
+    },
+    delete: function(hash: string): Promise<AxiosResponse> {
+      return apiClient.delete(`cut/${hash}`, withAuth());
     }
   }
 };
