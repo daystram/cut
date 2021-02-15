@@ -22,19 +22,11 @@ spec:
       middlewares:
         - name: gzip
     - kind: Rule
-      match: "Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/api`)"
+      match: "Host(`{{ .Values.ingress.host }}`) && (PathPrefix(`/api`) || PathPrefix(`/raw`))"
       services:
         - name: {{ include "cut.fullname" . }}-be
           passHostHeader: true
           port: {{ .Values.service.port }}
-    - kind: Rule
-      match: "Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/oauth`)"
-      services:
-        - name: {{ include "cut.fullname" . }}-be
-          passHostHeader: true
-          port: {{ .Values.service.port }}
-      middlewares:
-        - name: cors
   {{- if .Values.ingress.tls }}
   tls:
     secretName: cert-{{ include "cut.fullname" . }}
@@ -47,29 +39,6 @@ metadata:
   name: gzip
 spec:
   compress: {}
-
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: cors
-spec:
-  headers:
-    accessControlAllowOriginList:
-      - "*"
-    accessControlAllowMethods:
-      - "GET"
-      - "POST"
-    accessControlAllowHeaders:
-      - "Content-Type"
-      - "Content-Length"
-      - "Authorization"
-      - "Origin"
-    accessControlExposeHeaders:
-      - "Content-Type"
-      - "Content-Length"
-    accessControlAllowCredentials: false
-    accessControlMaxAge: 120
 
 ---
 apiVersion: cert-manager.io/v1alpha2
