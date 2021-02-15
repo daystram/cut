@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "cut.fullname" . }}
+  name: {{ include "cut.fullname" . }}-fe
   labels:
     {{- include "cut.labels" . | nindent 4 }}
+    tier: fe
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -13,3 +14,23 @@ spec:
       name: http
   selector:
     {{- include "cut.selectorLabels" . | nindent 4 }}
+    tier: fe
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cut.fullname" . }}-be
+  labels:
+    {{- include "cut.labels" . | nindent 4 }}
+    tier: be
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "cut.selectorLabels" . | nindent 4 }}
+    tier: be
