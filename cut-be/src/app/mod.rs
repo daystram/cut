@@ -20,8 +20,8 @@ pub async fn start() -> std::io::Result<()> {
 
     // init Redis
     let rd_manager = RedisConnectionManager::new(format!(
-        "redis://{}:{}/",
-        config.redis_host, config.redis_port
+        "redis://:{}@{}:{}/",
+        config.redis_password, config.redis_host, config.redis_port
     ))
     .unwrap();
     let rd_pool = Pool::builder().max_size(15).build(rd_manager).unwrap();
