@@ -151,7 +151,7 @@ chart dev cut:
   only:
     - branches
   except:
-    - master
+    - main
 
 chart prod cut:
   stage: chart
