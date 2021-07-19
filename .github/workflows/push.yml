@@ -18,7 +18,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --all-features --manifest-path cut-be
+          args: --release --all-features --manifest-path cut-be/Cargo.toml
       - name: Archive Artifacts
         uses: actions/upload-artifact@v2
         with:
