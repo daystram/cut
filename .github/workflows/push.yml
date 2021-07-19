@@ -1,0 +1,85 @@
+name: Build
+on: push
+jobs:
+  build-be:
+    name: Build cut-be
+    runs-on: Ubuntu-20.04
+    defaults:
+      run:
+        working-directory: cut-be
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-be
+          path: |
+            cut-be/target/release/cut-be
+  test-be:
+    name: Test cut-be
+    runs-on: Ubuntu-20.04
+    needs: [build-be]
+    defaults:
+      run:
+        working-directory: cut-be
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+  lint-fe:
+    name: Lint cut-fe
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cut-fe
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 12.x
+      - name: Install Dependencies
+        run: yarn install
+      - name: eslint
+        run: yarn lint
+  build-fe:
+    name: Build cut-fe
+    runs-on: Ubuntu-20.04
+    defaults:
+      run:
+        working-directory: cut-fe
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 12.x
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build
+        run: yarn build
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-fe
+          path: |
+            cut-fe/dist/
