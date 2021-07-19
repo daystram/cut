@@ -1,0 +1,77 @@
+name: Nightly
+
+on:
+  workflow_dispatch:
+
+jobs:
+  image:
+    name: Publish Image
+    environment: Development
+    runs-on: Ubuntu-20.04
+    env:
+      APPLICATION: cut
+    strategy:
+      matrix:
+        service: [be, fe]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Set Development Version
+        run: echo "RELEASE_VERSION=v0.0.0-development" >> $GITHUB_ENV
+      - name: Provide Env File
+        run: |
+          echo "${{ secrets.FE_ENV_FILE }}" > ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
+          echo "VUE_APP_VERSION=${{ env.RELEASE_VERSION }}" >> ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
+      - name: Build and Push Image
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ env.APPLICATION }}-${{ matrix.service }}
+          platforms: linux/amd64
+          tags: daystram/${{ env.APPLICATION }}:${{ matrix.service }}-dev
+          push: true
+  chart:
+    name: Publish Helm Chart
+    environment: Development
+    runs-on: Ubuntu-20.04
+    container: daystram/k8s-tools:latest
+    needs: [image]
+    env:
+      APPLICATION: cut
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Set Development Version
+        run: echo "RELEASE_VERSION=v0.0.0-development" >> $GITHUB_ENV
+      - name: Initialize Git Credentials
+        run: |
+          git config --global user.name "${{ secrets.BOTDAYSTRAM_NAME }}"
+          git config --global user.email "${{ secrets.BOTDAYSTRAM_EMAIL }}"
+          mkdir -p /root/.ssh && echo "${{ secrets.BOTDAYSTRAM_KEY_FILE }}" > /root/.ssh/id_rsa.github && chmod 600 /root/.ssh/id_rsa.github
+          cat >> /etc/ssh/ssh_config <<EOF
+          Host github.com
+              HostName github.com
+              IdentityFile /root/.ssh/id_rsa.github
+              IdentitiesOnly yes
+              StrictHostKeyChecking no
+          EOF
+          echo "${{ secrets.KUBECONFIG_FILE }}" > $KUBECONFIG && chmod 700 $KUBECONFIG
+      - name: Build and Deploy Chart
+        run: |
+          eval `ssh-agent -s`
+          git clone ssh://git@github.com/daystram/helm-charts.git
+          cp -r .daystram helm-charts/docs/
+          cd helm-charts/docs/
+          curl -sfL https://charts.daystram.com/build.sh | sh -s - ${{ env.APPLICATION }} ${{ env.RELEASE_VERSION }}
+          rm -rf .daystram/
+          git add .
+          git commit -m "feat: added chart for ${{ env.APPLICATION }}@${{ env.RELEASE_VERSION }}"
+          git push

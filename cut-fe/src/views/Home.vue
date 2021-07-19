@@ -37,6 +37,9 @@
         </v-btn>
       </v-row>
     </v-col>
+    <div class="app-version text-overline text--disabled">
+      {{ appVersion || "" }}
+    </div>
   </v-container>
 </template>
 
@@ -47,7 +50,11 @@ import { authManager } from "@/auth";
 
 export default Vue.extend({
   components: { Logo },
-
+  data() {
+    return {
+      appVersion: process.env.VUE_APP_VERSION
+    };
+  },
   computed: {
     isAuthenticated() {
       return authManager.isAuthenticated();
